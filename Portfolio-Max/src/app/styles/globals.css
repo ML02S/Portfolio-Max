@@ -1,3 +1,65 @@
+@font-face {
+  font-family: 'Patriot';
+  src: url('/fonts/Patriot.otf') format('opentype');
+  font-style: normal;
+  font-weight: normal;
+}
+
+@font-face {
+  font-family: 'Dearest';
+  src: url('/fonts/Dearest.ttf') format('truetype');
+  font-style: normal;
+  font-weight: normal;
+}
+
+@font-face {
+  font-family: 'Arizonia';
+  src: url('/fonts/Arizonia.ttf') format('truetype');
+  font-style: normal;
+  font-weight: normal;
+}
+
+@font-face {
+  font-family: 'Bilbo';
+  src: url('/fonts/Bilbo.otf') format('opentype');
+  font-style: normal;
+  font-weight: normal;
+}
+
+@font-face {
+  font-family: 'ShadowHand';
+  src: url('/fonts/ShadowHand.ttf') format('truetype');
+  font-style: normal;
+  font-weight: normal;
+}
+
+@font-face {
+  font-family: 'Agnes';
+  src: url('/fonts/Agnes.otf') format('opentype');
+  font-style: normal;
+  font-weight: normal;
+}
+
+@font-face {
+  font-family: 'PicNic';
+  src: url('/fonts/PicNic.otf') format('opentype');
+  font-style: normal;
+  font-weight: normal;
+}
+
+@font-face {
+  font-family: 'Knighthings Spikeless';
+  src: url('/fonts/KnighthingsSpikeless.ttf') format('truetype');
+  font-style: normal;
+  font-weight: normal;
+}
+
+@font-face {
+  font-family: 'Departure mono';
+  src: url('/fonts/DepartureMono-regular.ttf') format('opentype');
+  font-style: normal;
+  font-weight: normal;
+}
 
 *, *::before, *::after {
   box-sizing: border-box;
