@@ -1,6 +1,6 @@
 @font-face {
   font-family: 'Patriot';
-  src: url('/fonts/Patriot.otf') format('opentype');
+  src: url('/fonts/Patriot-Medium.otf') format('opentype'); /* Correctie: Bestand is Patriot-Medium.otf */
   font-style: normal;
   font-weight: normal;
 }
@@ -14,14 +14,14 @@
 
 @font-face {
   font-family: 'Arizonia';
-  src: url('/fonts/Arizonia.ttf') format('truetype');
+  src: url('/fonts/Arizonia-Regular.ttf') format('truetype'); /* Correctie: Bestand is Arizonia-Regular.ttf */
   font-style: normal;
   font-weight: normal;
 }
 
 @font-face {
   font-family: 'Bilbo';
-  src: url('/fonts/Bilbo.otf') format('opentype');
+  src: url('/fonts/Bilbo-Regular.otf') format('opentype'); /* Correctie: Bestand is Bilbo-Regular.otf */
   font-style: normal;
   font-weight: normal;
 }
@@ -35,28 +35,28 @@
 
 @font-face {
   font-family: 'Agnes';
-  src: url('/fonts/Agnes.otf') format('opentype');
+  src: url('/fonts/Agnes-Regular.otf') format('opentype'); /* Correctie: Bestand is Agnes-Regular.otf */
   font-style: normal;
   font-weight: normal;
 }
 
 @font-face {
   font-family: 'PicNic';
-  src: url('/fonts/PicNic.otf') format('opentype');
+  src: url('/fonts/PicNic-Regular.otf') format('opentype'); /* Correctie: Bestand is PicNic-Regular.otf */
   font-style: normal;
   font-weight: normal;
 }
 
 @font-face {
-  font-family: 'Knighthings Spikeless';
-  src: url('/fonts/KnighthingsSpikeless.ttf') format('truetype');
+  font-family: 'Kingthings Spikeless'; /* Correctie: Font-family naam aangepast */
+  src: url('/fonts/Kingthings_Spikeless.ttf') format('truetype'); /* Correctie: Bestand is Kingthings_Spikeless.ttf */
   font-style: normal;
   font-weight: normal;
 }
 
 @font-face {
   font-family: 'Departure';
-  src: url('/fonts/DepartureMono-regular.ttf') format('opentype');
+  src: url('/fonts/DepartureMono-Regular.woff2') format('woff2'); /* Correctie: Bestand is DepartureMono-Regular.woff2 */
   font-style: normal;
   font-weight: normal;
 }
