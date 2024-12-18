@@ -395,3 +395,69 @@
   animation-delay: 0.18s;
 }
 
+.header {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+
+.headerInnerWrapper {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+}
+
+.headerCard {
+  transform: none;
+  padding-inline: 8px;
+  padding-block: 4px;
+  height: 210px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.headerCardDescription{
+  margin: 0;
+}
+
+.aboutLink {
+  color: inherit;
+}
+
+.worksIndexWrapper {
+  display: flex;
+  flex-direction: row;
+  padding-top: 2px;
+  gap: 30px;
+}
+
+.worksIndex {
+  display: flex;
+  flex-direction: column;
+}
+
+.hoverableWork {
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+}
+
+.hoverableWorkYear {
+  color: #b9b9b9;
+}
+
+.hoverFont{
+   display: inline-block;
+   margin: 0;
+}
+
+.animatedTextHeader{
+   line-height: 1.2;
+   margin: 0;
+}
+.animatedTextSpan{
+    transition: font-family 0.3s ease;
+    display: inline-block;
+     vertical-align: top;
+}

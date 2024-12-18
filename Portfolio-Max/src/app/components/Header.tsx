@@ -1,15 +1,16 @@
-import React, { useState, useEffect, useContext, memo, useRef } from "react";
-import { RightArrow } from "./arrows"; // Replace with your actual import
-import { CardsContext } from "../cardsContext"; // Replace with your actual import
+"use client" 
+
+import React, { useState, useEffect, useContext, memo, useRef, useMemo } from "react";
+import { RightArrow } from "./arrows";
+import { CardsContext } from "../cardsContext";
 import { motion } from "framer-motion";
-import { works } from "../data/works"; // Replace with your actual import
-import "../styles/globals.css"; // Replace with your actual import
+import { works } from "../data/works";
+import "../styles/globals.css";
 
 interface WorkData {
   id: string;
   url: string;
   year: string;
-  // Add other properties of your work object here if needed
 }
 
 const fonts = [
@@ -33,27 +34,29 @@ const AnimatedText = ({ text }: { text: string }) => {
   const isTextAnimatingRef = useRef(false);
   const [isHovered, setIsHovered] = useState(false);
 
-  const resetToOriginalFont = () => {
-    setFontState((prev) => ({
-      ...prev,
-      isResetting: true,
-    }));
+  const resetToOriginalFont = useMemo(() => {
+    return () => {
+      setFontState((prev) => ({
+        ...prev,
+        isResetting: true,
+      }));
 
-    text.split("").forEach((_: string, index: number) => {
-      setTimeout(() => {
-        setFontState((prev) => {
-          const newFonts = [...prev.activeFonts];
-          newFonts[index] = "inherit";
-          const allReset = newFonts.every((font) => font === "inherit");
-          return {
-            activeFonts: newFonts,
-            currentIndex: -1,
-            isResetting: !allReset,
-          };
-        });
-      }, index * 150);
-    });
-  };
+      text.split("").forEach((_: string, index: number) => {
+        setTimeout(() => {
+          setFontState((prev) => {
+            const newFonts = [...prev.activeFonts];
+            newFonts[index] = "inherit";
+            const allReset = newFonts.every((font) => font === "inherit");
+            return {
+              activeFonts: newFonts,
+              currentIndex: -1,
+              isResetting: !allReset,
+            };
+          });
+        }, index * 150);
+      });
+    };
+  }, [text]);
 
   useEffect(() => {
     const initialAnimation = () => {
@@ -81,7 +84,7 @@ const AnimatedText = ({ text }: { text: string }) => {
 
     const delayTimer = setTimeout(initialAnimation, 500);
     return () => clearTimeout(delayTimer);
-  }, [text]);
+  }, [text, resetToOriginalFont]);
 
   const handleTextHover = () => {
     if (isTextAnimatingRef.current || fontState.isResetting || isHovered) return;
@@ -117,7 +120,7 @@ const AnimatedText = ({ text }: { text: string }) => {
         margin: 0,
       }}
     >
- <h1 style={{ lineHeight: 1.2, margin: 0 }}> {/* Reset margin here */}
+      <h1 style={{ lineHeight: 1.2, margin: 0 }}>
         {text.split("").map((letter: string, index: number) => (
           <span
             key={index}
@@ -150,6 +153,7 @@ const HoverableWork = memo(({ id, url, year }: WorkData) => {
     </motion.a>
   );
 });
+HoverableWork.displayName = 'HoverableWork';
 
 const WorksIndex = memo(({ works, className }: { works: WorkData[]; className?: string }) => (
   <div className={`works-index ${className || ''}`}>
@@ -158,6 +162,7 @@ const WorksIndex = memo(({ works, className }: { works: WorkData[]; className?: 
     ))}
   </div>
 ));
+WorksIndex.displayName = 'WorksIndex';
 
 export default function Header() {
   return (

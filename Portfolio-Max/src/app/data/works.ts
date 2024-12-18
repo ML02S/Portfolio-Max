@@ -93,6 +93,7 @@ const works: WorkData[] = [
   },
 ];
 
-let worksReversed = works.toReversed();
+// Array omdraaien zonder de originele array te wijzigen
+let worksReversed = [...works].reverse();
 
 export { works, worksReversed };
