@@ -1,5 +1,3 @@
-"use client" 
-
 import React, { useState, useEffect, useContext, memo, useRef, useMemo } from "react";
 import { RightArrow } from "./arrows";
 import { CardsContext } from "../cardsContext";
