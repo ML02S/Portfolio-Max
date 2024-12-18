@@ -1,0 +1,602 @@
+<!DOCTYPE html><html lang="en" class="__className_d96792"><head><meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/_next/static/css/2e217b198695519f.css" data-precedence="next"/><link rel="stylesheet" href="/_next/static/css/3d2178a07cfa6620.css" data-precedence="next"/><link rel="stylesheet" href="/_next/static/css/42d4ccb0167bd621.css" data-precedence="next"/><link rel="preload" as="script" fetchPriority="low" href="/_next/static/chunks/webpack-1e92e0f9031ffbb1.js"/><script src="/_next/static/chunks/fd9d1056-5798c5bc23aff152.js" async=""></script><script src="/_next/static/chunks/117-89198cad900451d3.js" async=""></script><script src="/_next/static/chunks/main-app-aa0c5940ccc089c7.js" async=""></script><script src="/_next/static/chunks/878-bcfb3f9d491ccb69.js" async=""></script><script src="/_next/static/chunks/app/works/face/page-fb384a35a3246a88.js" async=""></script><script src="/_next/static/chunks/972-95d2cb17d6da123b.js" async=""></script><script src="/_next/static/chunks/app/not-found-afdb90c8ee883262.js" async=""></script><title>Portfolio Max</title><meta name="description" content="Portfolio site of Max Stokla"/><script src="/_next/static/chunks/polyfills-42372ed130431b0a.js" noModule=""></script></head><body><div class="heading"><a class="back" href="/"><svg width="10" height="8" viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip0_230_377)"><path d="M0 3.80859C0 3.94824 0.0634766 4.08154 0.177734 4.18945L3.45312 7.4585C3.56738 7.56641 3.69434 7.61719 3.82764 7.61719C4.10693 7.61719 4.32275 7.40771 4.32275 7.12207C4.32275 6.98877 4.27832 6.85547 4.18311 6.7666L3.30713 5.85889L1.16162 3.9292L1.04736 4.20215L2.73584 4.32275H8.72803C9.02637 4.32275 9.23584 4.10693 9.23584 3.80859C9.23584 3.51025 9.02637 3.29443 8.72803 3.29443H2.73584L1.04736 3.41504L1.16162 3.69434L3.30713 1.7583L4.18311 0.850586C4.27832 0.761719 4.32275 0.628418 4.32275 0.495117C4.32275 0.209473 4.10693 0 3.82764 0C3.69434 0 3.56738 0.0507812 3.45312 0.158691L0.177734 3.42773C0.0634766 3.53564 0 3.66895 0 3.80859Z" fill="black" fill-opacity="0.85"></path></g><defs><clipPath id="clip0_230_377"><rect width="9.74365" height="7.62354" fill="white"></rect></clipPath></defs></svg>Terug</a><h2>Emotion detection</h2><span>2024</span></div>
+<hr/>
+<h3>Project</h3>
+<p>In dit project heb ik Python en Arduino gecombineerd om een ​​interactief systeem te creëren dat reageert op menselijke uitdrukkingen. Met behulp van Python analyseerde ik gezichtsuitdrukkingen in realtime en detecteerde wanneer iemand glimlachte of lachte. Deze gegevens werden vervolgens als commando naar de Arduino gestuurd, die als reactie een waterpomp activeerde.</p>
+<hr/>
+<h3>Uitleg code:</h3>
+<p>Bibliotheken: Je moet de volgende Python-bibliotheken installeren. Dit kan meestal met pip, de package manager van Python. Open je terminal of command prompt en voer de volgende commando&#x27;s uit:</p>
+<pre><code>pip install opencv-python
+pip install face_recognition
+pip install fer
+</code></pre>
+<ol>
+<li>Importeren van bibliotheken</li>
+</ol>
+<pre><code>import cv2
+import face_recognition
+from fer import FER
+import time
+from threading import Thread
+from queue import Queue
+</code></pre>
+<p>Hier importeren we alle benodigde bibliotheken.</p>
+<ol start="2">
+<li>Initialiseren van variabelen</li>
+</ol>
+<pre><code>known_face_encodings = []
+known_face_ids = []
+next_id = 1
+last_seen = {}
+timeout = 600  # 10 minutes in seconds
+face_detection_interval = 2
+emotion_detection_interval = 1
+</code></pre>
+<p>known_face_encodings: Een lijst om gezichtscoderingen van bekende gezichten op te slaan.</p>
+<p>known_face_ids: Een lijst om ID&#x27;s van bekende gezichten op te slaan.</p>
+<p>next_id: Een teller voor het genereren van nieuwe ID&#x27;s.</p>
+<p>last_seen: Een dictionary om de tijd bij te houden dat elk gezicht voor het laatst is gezien.</p>
+<p>timeout: De tijd (in seconden) waarna een gezicht wordt &quot;vergeten&quot;.</p>
+<p>face_detection_interval: Bepaalt hoe vaak de code naar nieuwe gezichten zoekt, hoe hoger de waarde hoe minder vaak de code gezichten herkent.</p>
+<p>emotion_detection_interval: Bepaalt hoe vaak de code naar emoties zoekt.</p>
+<ol start="3">
+<li>Initialiseren van de emotiedetector en video capture</li>
+</ol>
+<pre><code>emotion_detector = FER(mtcnn=True)
+video_capture = cv2.VideoCapture(0)
+video_capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+video_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+</code></pre>
+<p>FER(mtcnn=True): Initialiseert de Face Emotion Recognizer met MTCNN voor gezichtsdetectie.</p>
+<p>cv2.VideoCapture(0): Start de webcam (0 is de standaard webcam).</p>
+<p>video_capture.set(): Stelt de resolutie van de video in.</p>
+<ol start="4">
+<li>Afdrukken van Startbericht</li>
+</ol>
+<pre><code>print(&quot;Programma gestart. Druk op &#x27;q&#x27; om te stoppen.&quot;)
+</code></pre>
+<p>Druk een bericht af dat het programma gestart is</p>
+<ol start="5">
+<li>Queue initialisatie en frame count</li>
+</ol>
+<pre><code>frame_count = 0
+face_queue = Queue(maxsize=5)
+emotion_queue = Queue(maxsize=5)
+</code></pre>
+<p>frame_count: Houdt bij welk frame verwerkt wordt om bewerkingen om de zoveel frames uit te voeren</p>
+<p>face_queue: Een queue (wachtrij) om de gedetecteerde gezichten en coderingen door te geven aan de main thread.</p>
+<p>emotion_queue: Een queue om de gedetecteerde emoties door te geven aan de main thread.</p>
+<ol start="6">
+<li>Process Face functie</li>
+</ol>
+<pre><code>def process_faces(frame):
+    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    face_locations = face_recognition.face_locations(rgb_frame, model=&quot;hog&quot;)
+    face_encodings = face_recognition.face_encodings(rgb_frame, face_locations)
+    face_queue.put((face_locations, face_encodings))
+</code></pre>
+<p>Deze functie wordt op een aparte thread uitgevoerd en detecteert gezichten in een frame.</p>
+<p>De resultaten (locaties en coderingen) worden in face_queue geplaatst.</p>
+<ol start="7">
+<li>Process Emotion functie</li>
+</ol>
+<pre><code>def process_emotions(frame, face_location):
+    top, right, bottom, left = face_location
+    face_image = frame[top:bottom, left:right]
+    emotions = emotion_detector.detect_emotions(face_image)
+    emotion_queue.put((face_location, emotions))
+</code></pre>
+<p>Deze functie, ook op een aparte thread, detecteert emoties in een gezichtsgebied.</p>
+<p>De resultaten (locatie en emoties) worden in emotion_queue geplaatst.</p>
+<ol start="8">
+<li>Main loop</li>
+</ol>
+<pre><code>try:
+    while True:
+        ret, frame = video_capture.read()
+        if not ret:
+            print(&quot;Kan geen frame van de camera lezen. Opnieuw proberen...&quot;)
+            time.sleep(1)
+            continue
+
+        frame_count += 1
+        current_time = time.time()
+
+        if frame_count % face_detection_interval == 0:
+            Thread(target=process_faces, args=(frame.copy(),)).start()
+
+        if not face_queue.empty():
+            face_locations, face_encodings = face_queue.get()
+            for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
+                matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
+                face_id = &quot;Onbekend&quot;
+
+                if True in matches:
+                    first_match_index = matches.index(True)
+                    face_id = known_face_ids[first_match_index]
+                else:
+                    face_id = f&quot;Persoon {next_id}&quot;
+                    known_face_encodings.append(face_encoding)
+                    known_face_ids.append(face_id)
+                    next_id += 1
+
+                last_seen[face_id] = current_time
+
+                cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
+                cv2.putText(frame, face_id, (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+
+                if frame_count % emotion_detection_interval == 0:
+                    Thread(target=process_emotions, args=(frame.copy(), (top, right, bottom, left))).start()
+
+        if not emotion_queue.empty():
+            face_location, emotions = emotion_queue.get()
+            if emotions:
+                top, right, bottom, left = face_location
+                dominant_emotion = max(emotions[0][&#x27;emotions&#x27;], key=emotions[0][&#x27;emotions&#x27;].get)
+                cv2.putText(frame, f&quot;Emotion: {dominant_emotion}&quot;, (left, bottom + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+                
+        for face_id in list(last_seen.keys()):
+            if current_time - last_seen[face_id] &gt; timeout:
+                if face_id in known_face_ids:
+                    index = known_face_ids.index(face_id)
+                    known_face_encodings.pop(index)
+                    known_face_ids.pop(index)
+                del last_seen[face_id]
+                print(f&quot;Gezicht met ID {face_id} verwijderd wegens inactiviteit.&quot;)
+                
+        cv2.imshow(&#x27;Video&#x27;, frame)
+
+        if cv2.waitKey(1) &amp; 0xFF == ord(&#x27;q&#x27;):
+            break
+</code></pre>
+<p>video_capture.read(): Leest een frame van de webcam.</p>
+<p>Face detectie thread: Als het interval is bereikt, start een thread om gezichten te detecteren</p>
+<p>Face handling: Haalt gezichten uit de queue. Vergelijkt met bekende gezichten of maakt een nieuw gezicht aan. Tekent een rechthoek om het gezicht en plaatst de ID.</p>
+<p>Emotion detectie thread: Als het interval is bereikt, start een thread om de emoties op het gezicht te detecteren</p>
+<p>Emotion handling: Haalt de locatie van het gezicht en de bijbehorende emotie uit de queue, en tekent de emotie op het scherm.</p>
+<p>Inactiviteitscontrole: Verwijdert gezichten die te lang niet zijn gezien.</p>
+<p>cv2.imshow(): Toont de video met herkenning en emoties.</p>
+<p>cv2.waitKey(): Wacht op een toetsaanslag. Stopt de loop als &#x27;q&#x27; wordt ingedrukt.</p>
+<ol start="9">
+<li>Afsluitprocedures</li>
+</ol>
+<pre><code>except KeyboardInterrupt:
+    print(&quot;Programma onderbroken door gebruiker.&quot;)
+
+finally:
+    video_capture.release()
+    cv2.destroyAllWindows()
+    print(&quot;Programma beëindigd.&quot;)
+</code></pre>
+<p>KeyboardInterrupt: Vangt een toetsenbord onderbreking op (bijv. Ctrl+C).</p>
+<p>finally:: Sluit de webcam en de vensters af, zelfs als er een fout optreedt.</p>
+<hr/>
+<h3>Complete code:</h3>
+<pre><code class="language-python">import cv2
+import face_recognition
+from fer import FER
+import time
+from threading import Thread
+from queue import Queue
+
+# Initialize variables
+known_face_encodings = []
+known_face_ids = []
+next_id = 1
+last_seen = {}
+timeout = 600  # 10 minutes in seconds
+face_detection_interval = 2
+emotion_detection_interval = 1 # Bepaal hoe vaak die het scherm checkt, interval checkt om de 3 frames. Lager interval is meer intensief 
+
+# Initialize emotion detector
+emotion_detector = FER(mtcnn=True)
+
+# Video capture
+video_capture = cv2.VideoCapture(0) # 0 staat voor de interne camera, switch naar 1 voor de eerste externe camera. // cap = cv2.VideoCapture(0, cv2.CAP_DSHOW) gebruil dit als de externe camera niet werkt.
+video_capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+video_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 480) #Beeld grote bepalen
+
+print(&quot;Programma gestart. Druk op &#x27;q&#x27; om te stoppen.&quot;)
+
+frame_count = 0
+face_queue = Queue(maxsize=5)
+emotion_queue = Queue(maxsize=5)
+
+def process_faces(frame): # Stelt indentiteit van de persoon vast.
+    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    face_locations = face_recognition.face_locations(rgb_frame, model=&quot;hog&quot;)
+    face_encodings = face_recognition.face_encodings(rgb_frame, face_locations)
+    face_queue.put((face_locations, face_encodings))
+
+def process_emotions(frame, face_location): # Check de emoties die op het gezicht wordt vertooont 
+    top, right, bottom, left = face_location
+    face_image = frame[top:bottom, left:right]
+    emotions = emotion_detector.detect_emotions(face_image)
+    emotion_queue.put((face_location, emotions)) # Correnspondeert met een wachtrij
+
+try:
+    while True:
+        ret, frame = video_capture.read()
+        if not ret:
+            print(&quot;Kan geen frame van de camera lezen. Opnieuw proberen...&quot;)
+            time.sleep(1)
+            continue
+
+        frame_count += 1
+        current_time = time.time()
+
+        if frame_count % face_detection_interval == 0:
+            Thread(target=process_faces, args=(frame.copy(),)).start()
+
+        if not face_queue.empty():
+            face_locations, face_encodings = face_queue.get()
+            for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
+                matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
+                face_id = &quot;Onbekend&quot;
+
+                if True in matches:
+                    first_match_index = matches.index(True)
+                    face_id = known_face_ids[first_match_index]
+                else:
+                    face_id = f&quot;Persoon {next_id}&quot;
+                    known_face_encodings.append(face_encoding)
+                    known_face_ids.append(face_id)
+                    next_id += 1
+
+                last_seen[face_id] = current_time
+
+                cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
+                cv2.putText(frame, face_id, (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+
+                if frame_count % emotion_detection_interval == 0:
+                    Thread(target=process_emotions, args=(frame.copy(), (top, right, bottom, left))).start()
+
+        if not emotion_queue.empty():
+            face_location, emotions = emotion_queue.get()
+            if emotions:
+                top, right, bottom, left = face_location
+                dominant_emotion = max(emotions[0][&#x27;emotions&#x27;], key=emotions[0][&#x27;emotions&#x27;].get)
+                cv2.putText(frame, f&quot;Emotion: {dominant_emotion}&quot;, (left, bottom + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+
+        for face_id in list(last_seen.keys()):
+            if current_time - last_seen[face_id] &gt; timeout:
+                if face_id in known_face_ids:
+                    index = known_face_ids.index(face_id)
+                    known_face_encodings.pop(index)
+                    known_face_ids.pop(index)
+                del last_seen[face_id]
+                print(f&quot;Gezicht met ID {face_id} verwijderd wegens inactiviteit.&quot;)
+
+        cv2.imshow(&#x27;Video&#x27;, frame)
+
+        if cv2.waitKey(1) &amp; 0xFF == ord(&#x27;q&#x27;):
+            break
+
+except KeyboardInterrupt:
+    print(&quot;Programma onderbroken door gebruiker.&quot;)
+
+finally:
+    video_capture.release()
+    cv2.destroyAllWindows()
+    print(&quot;Programma beëindigd.&quot;)
+
+</code></pre>
+<div style="max-width:800px;margin:0 auto;margin-bottom:20px"><img alt="Codeface" loading="lazy" width="600" height="400" decoding="async" data-nimg="1" style="color:transparent;width:100%;height:auto" sizes="100vw" srcSet="/_next/image/?url=%2Fimages%2Ffacereading.png&amp;w=640&amp;q=75 640w, /_next/image/?url=%2Fimages%2Ffacereading.png&amp;w=750&amp;q=75 750w, /_next/image/?url=%2Fimages%2Ffacereading.png&amp;w=828&amp;q=75 828w, /_next/image/?url=%2Fimages%2Ffacereading.png&amp;w=1080&amp;q=75 1080w, /_next/image/?url=%2Fimages%2Ffacereading.png&amp;w=1200&amp;q=75 1200w, /_next/image/?url=%2Fimages%2Ffacereading.png&amp;w=1920&amp;q=75 1920w, /_next/image/?url=%2Fimages%2Ffacereading.png&amp;w=2048&amp;q=75 2048w, /_next/image/?url=%2Fimages%2Ffacereading.png&amp;w=3840&amp;q=75 3840w" src="/_next/image/?url=%2Fimages%2Ffacereading.png&amp;w=3840&amp;q=75"/></div>
+<hr/>
+<h3>Code met arduino:</h3>
+<p>Hieronder een vergelijking van de code met Arduino-integratie versus de code zonder, met de nadruk op de veranderingen in elke sectie:</p>
+<ol>
+<li>
+<p>Arduino Serial Communicatie:</p>
+<p>import serial: De serial bibliotheek is geïmporteerd om communicatie met de Arduino mogelijk te maken.</p>
+<p>arduino = serial.Serial(&#x27;COM5&#x27;, 9600): Initialiseert een seriële verbinding met de Arduino op de opgegeven COM-poort (hier COM5) en met een baudrate van 9600. Je moet de COM-poort aanpassen aan je eigen setup.</p>
+<p>time.sleep(2): Wacht 2 seconden om de seriële verbinding te laten opzetten.</p>
+<p>arduino.write(b&#x27;WATER_ON&#x27;) en arduino.write(b&#x27;WATER_OFF&#x27;): Stuurt commando&#x27;s naar de Arduino (in bytes) om de waterpomp aan en uit te schakelen.</p>
+<p>arduino.close(): Sluit de seriële verbinding aan het einde van het programma.</p>
+</li>
+<li>
+<p>Waterpomp Functionaliteit:</p>
+<p>cooldown_time = 120: Een variabele die de minimale tijd (in seconden) tussen de waterpompactivaties bepaalt.</p>
+<p>waterpump_active = False: Een vlag om aan te geven of de waterpomp momenteel actief is.</p>
+<p>last_happy_times = <!-- -->: Een dictionary om de laatste tijd bij te houden dat de waterpomp geactiveerd is voor een bepaald gezicht.</p>
+<p>activate_waterpump(person_id) functie: Activeert de waterpomp voor 8 seconden, na een &#x27;happy&#x27; detectie voor een persoon. En wordt op een aparte thread uitgevoerd om de video bewerking niet te blokkeren.</p>
+</li>
+<li>
+<p>Emotie Detectie en Waterpomp Activering:</p>
+<p>Emotie Analyse: De code kijkt nu naar de top 3 emoties en toont deze op het scherm.</p>
+<p>&quot;Happy&quot; Trigger: Als de detectie van happy boven een drempelwaarde (0.5) komt, en de cooldown timer is afgelopen, dan wordt de waterpomp geactiveerd via de activate_waterpump functie.</p>
+</li>
+<li>
+<p>Externe Camera Fix</p>
+<p>De code maakt nu gebruik van cv2.VideoCapture(1, cv2.CAP_DSHOW) om de externe camera te starten en controleerd of de camera wel is verbonden.</p>
+</li>
+<li>
+<p>Debugger info</p>
+<p>De code geeft nu in de terminal de gedetecteerde emoties uit.</p>
+</li>
+</ol>
+<p>Uitleg in code per veranderingen:</p>
+<ol>
+<li>Importeer de serial bibliotheek:</li>
+</ol>
+<pre><code>import serial
+</code></pre>
+<p>Nieuw: Deze bibliotheek wordt toegevoegd om seriële communicatie met de Arduino mogelijk te maken.</p>
+<ol start="2">
+<li>Arduino Setup:</li>
+</ol>
+<pre><code>arduino = serial.Serial(&#x27;COM5&#x27;, 9600)
+time.sleep(2)
+</code></pre>
+<p>Nieuw:</p>
+<p>serial.Serial(&#x27;COM5&#x27;, 9600): Initialiseert de seriële communicatie met de Arduino op de opgegeven COM-poort (&#x27;COM5&#x27; in dit voorbeeld) en een baudrate van 9600.</p>
+<p>time.sleep(2): Wacht 2 seconden zodat de seriële verbinding stabiel tot stand kan komen.</p>
+<ol start="3">
+<li>Gewijzigde variabelen initialisatie:</li>
+</ol>
+<pre><code>last_happy_times = {}
+cooldown_time = 120
+waterpump_active = False
+emotion_detection_interval = 3
+</code></pre>
+<p>Nieuw:</p>
+<p>last_happy_times: Een dictionary die de tijd van de laatste waterpompactivatie opslaat per persoon.</p>
+<p>cooldown_time: Een variabele die de cooldown periode in seconden vaststelt.</p>
+<p>waterpump_active: Een vlag die checkt of de waterpomp al geactiveerd is.</p>
+<p>Gewijzigd:</p>
+<p>emotion_detection_interval = 3: Is gewijzigd van 1 naar 3.</p>
+<ol start="4">
+<li>Video Capture - Externe Camera:</li>
+</ol>
+<pre><code>     
+video_capture = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+if not video_capture.isOpened():
+    print(&quot;Kan de externe camera niet openen. Controleer of de camera is aangesloten.&quot;)
+    exit()
+</code></pre>
+<p>Gewijzigd:</p>
+<p>cv2.VideoCapture(1, cv2.CAP_DSHOW): Selecteert de externe camera.</p>
+<p>De code controleert nu of de camera is aangesloten en de code afsluiten als dit niet het geval is.</p>
+<ol start="5">
+<li>activate_waterpump Functie:</li>
+</ol>
+<pre><code>      
+def activate_waterpump(person_id):
+    global waterpump_active
+    waterpump_active = True
+    print(f&quot;Blijdschap gedetecteerd voor {person_id}, waterpomp geactiveerd voor 8 seconden.&quot;)
+    arduino.write(b&#x27;WATER_ON&#x27;)
+    time.sleep(8)
+    arduino.write(b&#x27;WATER_OFF&#x27;)
+    print(f&quot;Waterpomp uitgeschakeld voor {person_id}.&quot;)
+    waterpump_active = False
+   
+</code></pre>
+<p>Nieuw: Deze functie wordt aangeroepen om de waterpomp te activeren:</p>
+<p>global waterpump_active: Gebruikt de global vlag</p>
+<p>waterpump_active = True: Zet de vlag naar True.</p>
+<p>arduino.write(b&#x27;WATER_ON&#x27;): Stuurt een signaal naar de arduino om de waterpomp aan te zetten.</p>
+<p>time.sleep(8): De waterpomp blijft voor 8 seconden aan.</p>
+<p>arduino.write(b&#x27;WATER_OFF&#x27;): Stuurt een signaal naar de arduino om de waterpomp uit te zetten.</p>
+<p>waterpump_active = False: Zet de flag naar False.</p>
+<ol start="6">
+<li>Wijzigingen in de Main Loop (Emotie Handling en Pomp Activatie):</li>
+</ol>
+<pre><code>      
+if not emotion_queue.empty():
+    face_location, emotions = emotion_queue.get()
+    if emotions:
+        top, right, bottom, left = face_location
+        sorted_emotions = sorted(emotions[0][&#x27;emotions&#x27;].items(), key=lambda x: x[1], reverse=True)
+
+        # Toon de top 3 emoties
+        emotion_text = &quot; | &quot;.join([f&quot;{emotion}: {conf:.2f}&quot; for emotion, conf in sorted_emotions[:3]])
+        cv2.putText(frame, emotion_text, (left, bottom + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+        
+        # Debug informatie
+        print(f&quot;Gedetecteerde emoties: {sorted_emotions}&quot;)
+        
+        # Controleer op &#x27;happy&#x27; emotie met lagere drempelwaarde
+        if sorted_emotions[0][0] == &#x27;happy&#x27; and sorted_emotions[0][1] &gt; 0.5:
+            face_id = next((id for id, loc in last_seen.items() if loc == current_time), None)
+            if face_id:
+                last_happy_time = last_happy_times.get(face_id, 0)
+                if (current_time - last_happy_time) &gt; cooldown_time:
+                    if not waterpump_active:
+                        last_happy_times[face_id] = current_time
+                        Thread(target=activate_waterpump, args=(face_id,)).start()
+
+</code></pre>
+<p>Gewijzigd en Nieuw:</p>
+<p>Top Emotie Weergave: Toont nu de top 3 emoties met bijbehorende waarden op het scherm.</p>
+<p>Debug Output: Print gedetecteerde emoties naar de console.</p>
+<p>Happy Emotie Drempel:</p>
+<p>Checkt of de dominantste emotie &#x27;happy&#x27; is met een drempel van 0.5.</p>
+<p>Pomp Activatielogica:</p>
+<p>Controleert of er een gezicht is gekoppeld aan de huidige tijd.</p>
+<p>Kijkt of de cooldowntimer is afgelopen.</p>
+<p>Kijkt of de waterpomp al actief is</p>
+<p>Als dit het geval is wordt de activate_waterpump functie in een nieuwe thread gestart.</p>
+<ol start="7">
+<li>Afsluitprocedure finally block:</li>
+</ol>
+<pre><code>      
+finally:
+    video_capture.release()
+    cv2.destroyAllWindows()
+    arduino.close()
+    print(&quot;Programma beëindigd.&quot;)
+
+</code></pre>
+<p>Gewijzigd: arduino.close(): Sluit de seriële communicatie met de Arduino netjes af.</p>
+<hr/>
+<h3>Complete code:</h3>
+<pre><code>
+import cv2
+import face_recognition
+from fer import FER
+import time
+from threading import Thread
+from queue import Queue
+import serial
+
+# Arduino setup
+arduino = serial.Serial(&#x27;COM5&#x27;, 9600)  # Pas de COM-poort aan indien nodig
+time.sleep(2)  # Wacht tot de verbinding is opgezet
+
+# Initialize variables
+known_face_encodings = []
+known_face_ids = []
+next_id = 1
+last_seen = {}
+last_happy_times = {}
+timeout = 600  # 10 minutes in seconds
+face_detection_interval = 2
+emotion_detection_interval = 3
+cooldown_time = 120  # Cooldown tijd voor waterpomp in seconden
+waterpump_active = False
+
+# Initialize emotion detector
+emotion_detector = FER(mtcnn=True)
+
+# Video capture voor externe camera
+video_capture = cv2.VideoCapture(1, cv2.CAP_DSHOW)  # Gebruik 0 voor de eerste externe camera, of 1 als dat niet werkt
+video_capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+video_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+
+if not video_capture.isOpened():
+    print(&quot;Kan de externe camera niet openen. Controleer of de camera is aangesloten.&quot;)
+    exit()
+
+print(&quot;Programma gestart. Druk op &#x27;q&#x27; om te stoppen.&quot;)
+
+frame_count = 0
+face_queue = Queue(maxsize=5)
+emotion_queue = Queue(maxsize=5)
+
+def process_faces(frame):
+    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    face_locations = face_recognition.face_locations(rgb_frame, model=&quot;hog&quot;)
+    face_encodings = face_recognition.face_encodings(rgb_frame, face_locations)
+    face_queue.put((face_locations, face_encodings))
+
+def process_emotions(frame, face_location):
+    top, right, bottom, left = face_location
+    face_image = frame[top:bottom, left:right]
+    emotions = emotion_detector.detect_emotions(face_image)
+    emotion_queue.put((face_location, emotions))
+
+def activate_waterpump(person_id):
+    global waterpump_active
+    waterpump_active = True
+    print(f&quot;Blijdschap gedetecteerd voor {person_id}, waterpomp geactiveerd voor 8 seconden.&quot;)
+    arduino.write(b&#x27;WATER_ON&#x27;)
+    time.sleep(8)
+    arduino.write(b&#x27;WATER_OFF&#x27;)
+    print(f&quot;Waterpomp uitgeschakeld voor {person_id}.&quot;)
+    waterpump_active = False
+
+try:
+    while True:
+        ret, frame = video_capture.read()
+        if not ret:
+            print(&quot;Kan geen frame van de camera lezen. Opnieuw proberen...&quot;)
+            time.sleep(1)
+            continue
+
+        frame_count += 1
+        current_time = time.time()
+
+        if frame_count % face_detection_interval == 0:
+            Thread(target=process_faces, args=(frame.copy(),)).start()
+
+        if not face_queue.empty():
+            face_locations, face_encodings = face_queue.get()
+            for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
+                matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
+                face_id = &quot;Onbekend&quot;
+
+                if True in matches:
+                    first_match_index = matches.index(True)
+                    face_id = known_face_ids[first_match_index]
+                else:
+                    face_id = f&quot;Persoon {next_id}&quot;
+                    known_face_encodings.append(face_encoding)
+                    known_face_ids.append(face_id)
+                    next_id += 1
+
+                last_seen[face_id] = current_time
+
+                cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
+                cv2.putText(frame, face_id, (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+
+                if frame_count % emotion_detection_interval == 0:
+                    Thread(target=process_emotions, args=(frame.copy(), (top, right, bottom, left))).start()
+
+        if not emotion_queue.empty():
+            face_location, emotions = emotion_queue.get()
+            if emotions:
+                top, right, bottom, left = face_location
+                sorted_emotions = sorted(emotions[0][&#x27;emotions&#x27;].items(), key=lambda x: x[1], reverse=True)
+                
+                # Toon de top 3 emoties
+                emotion_text = &quot; | &quot;.join([f&quot;{emotion}: {conf:.2f}&quot; for emotion, conf in sorted_emotions[:3]])
+                cv2.putText(frame, emotion_text, (left, bottom + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+                
+                # Debug informatie
+                print(f&quot;Gedetecteerde emoties: {sorted_emotions}&quot;)
+                
+                # Controleer op &#x27;happy&#x27; emotie met lagere drempelwaarde
+                if sorted_emotions[0][0] == &#x27;happy&#x27; and sorted_emotions[0][1] &gt; 0.5:
+                    face_id = next((id for id, loc in last_seen.items() if loc == current_time), None)
+                    if face_id:
+                        last_happy_time = last_happy_times.get(face_id, 0)
+                        if (current_time - last_happy_time) &gt; cooldown_time:
+                            if not waterpump_active:
+                                last_happy_times[face_id] = current_time
+                                Thread(target=activate_waterpump, args=(face_id,)).start()
+
+        for face_id in list(last_seen.keys()):
+            if current_time - last_seen[face_id] &gt; timeout:
+                if face_id in known_face_ids:
+                    index = known_face_ids.index(face_id)
+                    known_face_encodings.pop(index)
+                    known_face_ids.pop(index)
+                del last_seen[face_id]
+                print(f&quot;Gezicht met ID {face_id} verwijderd wegens inactiviteit.&quot;)
+
+        cv2.imshow(&#x27;Video&#x27;, frame)
+
+        if cv2.waitKey(1) &amp; 0xFF == ord(&#x27;q&#x27;):
+            break
+
+except KeyboardInterrupt:
+    print(&quot;Programma onderbroken door gebruiker.&quot;)
+
+finally:
+    video_capture.release()
+    cv2.destroyAllWindows()
+    arduino.close()
+    print(&quot;Programma beëindigd.&quot;)
+
+</code></pre>
+<h3>Arduino code:</h3>
+<pre><code>const int relayPin = 5;  // Pin waarop het relais is aangesloten
+
+void setup() {
+  pinMode(relayPin, OUTPUT);
+  Serial.begin(9600);  // Start seriële communicatie
+}
+
+void loop() {
+  if (Serial.available() &gt; 0) {
+    String command = Serial.readStringUntil(&#x27;\n&#x27;);  // Lees het commando van de seriële poort
+
+    if (command == &quot;WATER_ON&quot;) {
+      digitalWrite(relayPin, HIGH);  // Zet de pomp aan
+    } 
+    else if (command == &quot;WATER_OFF&quot;) {
+      digitalWrite(relayPin, LOW);   // Zet de pomp uit
+    }
+  }
+}
+</code></pre><script src="/_next/static/chunks/webpack-1e92e0f9031ffbb1.js" async=""></script><script>(self.__next_f=self.__next_f||[]).push([0]);self.__next_f.push([2,null])</script><script>self.__next_f.push([1,"1:HL[\"/_next/static/css/2e217b198695519f.css\",\"style\"]\n2:HL[\"/_next/static/css/3d2178a07cfa6620.css\",\"style\"]\n3:HL[\"/_next/static/css/42d4ccb0167bd621.css\",\"style\"]\n"])</script><script>self.__next_f.push([1,"4:I[2846,[],\"\"]\n8:I[5878,[\"878\",\"static/chunks/878-bcfb3f9d491ccb69.js\",\"425\",\"static/chunks/app/works/face/page-fb384a35a3246a88.js\"],\"Image\"]\nb:I[4707,[],\"\"]\nc:I[6423,[],\"\"]\nd:I[2972,[\"972\",\"static/chunks/972-95d2cb17d6da123b.js\",\"160\",\"static/chunks/app/not-found-afdb90c8ee883262.js\"],\"\"]\nf:I[1060,[],\"\"]\n6:T9c3,"])</script><script>self.__next_f.push([1,"try:\n    while True:\n        ret, frame = video_capture.read()\n        if not ret:\n            print(\"Kan geen frame van de camera lezen. Opnieuw proberen...\")\n            time.sleep(1)\n            continue\n\n        frame_count += 1\n        current_time = time.time()\n\n        if frame_count % face_detection_interval == 0:\n            Thread(target=process_faces, args=(frame.copy(),)).start()\n\n        if not face_queue.empty():\n            face_locations, face_encodings = face_queue.get()\n            for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):\n                matches = face_recognition.compare_faces(known_face_encodings, face_encoding)\n                face_id = \"Onbekend\"\n\n                if True in matches:\n                    first_match_index = matches.index(True)\n                    face_id = known_face_ids[first_match_index]\n                else:\n                    face_id = f\"Persoon {next_id}\"\n                    known_face_encodings.append(face_encoding)\n                    known_face_ids.append(face_id)\n                    next_id += 1\n\n                last_seen[face_id] = current_time\n\n                cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)\n                cv2.putText(frame, face_id, (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)\n\n                if frame_count % emotion_detection_interval == 0:\n                    Thread(target=process_emotions, args=(frame.copy(), (top, right, bottom, left))).start()\n\n        if not emotion_queue.empty():\n            face_location, emotions = emotion_queue.get()\n            if emotions:\n                top, right, bottom, left = face_location\n                dominant_emotion = max(emotions[0]['emotions'], key=emotions[0]['emotions'].get)\n                cv2.putText(frame, f\"Emotion: {dominant_emotion}\", (left, bottom + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)\n                \n        for face_id in list(last_seen.keys()):\n            if current_time - last_seen[face_id] \u003e timeout:\n                if face_id in known_face_ids:\n                    index = known_face_ids.index(face_id)\n                    known_face_encodings.pop(index)\n                    known_face_ids.pop(index)\n                del last_seen[face_id]\n                print(f\"Gezicht met ID {face_id} verwijderd wegens inactiviteit.\")\n                \n        cv2.imshow('Video', frame)\n\n        if cv2.waitKey(1) \u0026 0xFF == ord('q'):\n            break\n"])</script><script>self.__next_f.push([1,"7:T10bb,"])</script><script>self.__next_f.push([1,"import cv2\nimport face_recognition\nfrom fer import FER\nimport time\nfrom threading import Thread\nfrom queue import Queue\n\n# Initialize variables\nknown_face_encodings = []\nknown_face_ids = []\nnext_id = 1\nlast_seen = {}\ntimeout = 600  # 10 minutes in seconds\nface_detection_interval = 2\nemotion_detection_interval = 1 # Bepaal hoe vaak die het scherm checkt, interval checkt om de 3 frames. Lager interval is meer intensief \n\n# Initialize emotion detector\nemotion_detector = FER(mtcnn=True)\n\n# Video capture\nvideo_capture = cv2.VideoCapture(0) # 0 staat voor de interne camera, switch naar 1 voor de eerste externe camera. // cap = cv2.VideoCapture(0, cv2.CAP_DSHOW) gebruil dit als de externe camera niet werkt.\nvideo_capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)\nvideo_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 480) #Beeld grote bepalen\n\nprint(\"Programma gestart. Druk op 'q' om te stoppen.\")\n\nframe_count = 0\nface_queue = Queue(maxsize=5)\nemotion_queue = Queue(maxsize=5)\n\ndef process_faces(frame): # Stelt indentiteit van de persoon vast.\n    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)\n    face_locations = face_recognition.face_locations(rgb_frame, model=\"hog\")\n    face_encodings = face_recognition.face_encodings(rgb_frame, face_locations)\n    face_queue.put((face_locations, face_encodings))\n\ndef process_emotions(frame, face_location): # Check de emoties die op het gezicht wordt vertooont \n    top, right, bottom, left = face_location\n    face_image = frame[top:bottom, left:right]\n    emotions = emotion_detector.detect_emotions(face_image)\n    emotion_queue.put((face_location, emotions)) # Correnspondeert met een wachtrij\n\ntry:\n    while True:\n        ret, frame = video_capture.read()\n        if not ret:\n            print(\"Kan geen frame van de camera lezen. Opnieuw proberen...\")\n            time.sleep(1)\n            continue\n\n        frame_count += 1\n        current_time = time.time()\n\n        if frame_count % face_detection_interval == 0:\n            Thread(target=process_faces, args=(frame.copy(),)).start()\n\n        if not face_queue.empty():\n            face_locations, face_encodings = face_queue.get()\n            for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):\n                matches = face_recognition.compare_faces(known_face_encodings, face_encoding)\n                face_id = \"Onbekend\"\n\n                if True in matches:\n                    first_match_index = matches.index(True)\n                    face_id = known_face_ids[first_match_index]\n                else:\n                    face_id = f\"Persoon {next_id}\"\n                    known_face_encodings.append(face_encoding)\n                    known_face_ids.append(face_id)\n                    next_id += 1\n\n                last_seen[face_id] = current_time\n\n                cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)\n                cv2.putText(frame, face_id, (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)\n\n                if frame_count % emotion_detection_interval == 0:\n                    Thread(target=process_emotions, args=(frame.copy(), (top, right, bottom, left))).start()\n\n        if not emotion_queue.empty():\n            face_location, emotions = emotion_queue.get()\n            if emotions:\n                top, right, bottom, left = face_location\n                dominant_emotion = max(emotions[0]['emotions'], key=emotions[0]['emotions'].get)\n                cv2.putText(frame, f\"Emotion: {dominant_emotion}\", (left, bottom + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)\n\n        for face_id in list(last_seen.keys()):\n            if current_time - last_seen[face_id] \u003e timeout:\n                if face_id in known_face_ids:\n                    index = known_face_ids.index(face_id)\n                    known_face_encodings.pop(index)\n                    known_face_ids.pop(index)\n                del last_seen[face_id]\n                print(f\"Gezicht met ID {face_id} verwijderd wegens inactiviteit.\")\n\n        cv2.imshow('Video', frame)\n\n        if cv2.waitKey(1) \u0026 0xFF == ord('q'):\n            break\n\nexcept KeyboardInterrupt:\n    print(\"Programma onderbroken door gebruiker.\")\n\nfinally:\n    video_capture.release()\n    cv2.destroyAllWindows()\n    print(\"Programma beëindigd.\")\n\n"])</script><script>self.__next_f.push([1,"9:T4a8,      \nif not emotion_queue.empty():\n    face_location, emotions = emotion_queue.get()\n    if emotions:\n        top, right, bottom, left = face_location\n        sorted_emotions = sorted(emotions[0]['emotions'].items(), key=lambda x: x[1], reverse=True)\n\n        # Toon de top 3 emoties\n        emotion_text = \" | \".join([f\"{emotion}: {conf:.2f}\" for emotion, conf in sorted_emotions[:3]])\n        cv2.putText(frame, emotion_text, (left, bottom + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)\n        \n        # Debug informatie\n        print(f\"Gedetecteerde emoties: {sorted_emotions}\")\n        \n        # Controleer op 'happy' emotie met lagere drempelwaarde\n        if sorted_emotions[0][0] == 'happy' and sorted_emotions[0][1] \u003e 0.5:\n            face_id = next((id for id, loc in last_seen.items() if loc == current_time), None)\n            if face_id:\n                last_happy_time = last_happy_times.get(face_id, 0)\n                if (current_time - last_happy_time) \u003e cooldown_time:\n                    if not waterpump_active:\n                        last_happy_times[face_id] = current_time\n                        Thread(target=activate_waterpump, args=(face_id,)).start()\n\na:T163c,"])</script><script>self.__next_f.push([1,"\nimport cv2\nimport face_recognition\nfrom fer import FER\nimport time\nfrom threading import Thread\nfrom queue import Queue\nimport serial\n\n# Arduino setup\narduino = serial.Serial('COM5', 9600)  # Pas de COM-poort aan indien nodig\ntime.sleep(2)  # Wacht tot de verbinding is opgezet\n\n# Initialize variables\nknown_face_encodings = []\nknown_face_ids = []\nnext_id = 1\nlast_seen = {}\nlast_happy_times = {}\ntimeout = 600  # 10 minutes in seconds\nface_detection_interval = 2\nemotion_detection_interval = 3\ncooldown_time = 120  # Cooldown tijd voor waterpomp in seconden\nwaterpump_active = False\n\n# Initialize emotion detector\nemotion_detector = FER(mtcnn=True)\n\n# Video capture voor externe camera\nvideo_capture = cv2.VideoCapture(1, cv2.CAP_DSHOW)  # Gebruik 0 voor de eerste externe camera, of 1 als dat niet werkt\nvideo_capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)\nvideo_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)\n\nif not video_capture.isOpened():\n    print(\"Kan de externe camera niet openen. Controleer of de camera is aangesloten.\")\n    exit()\n\nprint(\"Programma gestart. Druk op 'q' om te stoppen.\")\n\nframe_count = 0\nface_queue = Queue(maxsize=5)\nemotion_queue = Queue(maxsize=5)\n\ndef process_faces(frame):\n    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)\n    face_locations = face_recognition.face_locations(rgb_frame, model=\"hog\")\n    face_encodings = face_recognition.face_encodings(rgb_frame, face_locations)\n    face_queue.put((face_locations, face_encodings))\n\ndef process_emotions(frame, face_location):\n    top, right, bottom, left = face_location\n    face_image = frame[top:bottom, left:right]\n    emotions = emotion_detector.detect_emotions(face_image)\n    emotion_queue.put((face_location, emotions))\n\ndef activate_waterpump(person_id):\n    global waterpump_active\n    waterpump_active = True\n    print(f\"Blijdschap gedetecteerd voor {person_id}, waterpomp geactiveerd voor 8 seconden.\")\n    arduino.write(b'WATER_ON')\n    time.sleep(8)\n    arduino.write(b'WATER_OFF')\n    print(f\"Waterpomp uitgeschakeld voor {person_id}.\")\n    waterpump_active = False\n\ntry:\n    while True:\n        ret, frame = video_capture.read()\n        if not ret:\n            print(\"Kan geen frame van de camera lezen. Opnieuw proberen...\")\n            time.sleep(1)\n            continue\n\n        frame_count += 1\n        current_time = time.time()\n\n        if frame_count % face_detection_interval == 0:\n            Thread(target=process_faces, args=(frame.copy(),)).start()\n\n        if not face_queue.empty():\n            face_locations, face_encodings = face_queue.get()\n            for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):\n                matches = face_recognition.compare_faces(known_face_encodings, face_encoding)\n                face_id = \"Onbekend\"\n\n                if True in matches:\n                    first_match_index = matches.index(True)\n                    face_id = known_face_ids[first_match_index]\n                else:\n                    face_id = f\"Persoon {next_id}\"\n                    known_face_encodings.append(face_encoding)\n                    known_face_ids.append(face_id)\n                    next_id += 1\n\n                last_seen[face_id] = current_time\n\n                cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)\n                cv2.putText(frame, face_id, (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)\n\n                if frame_count % emotion_detection_interval == 0:\n                    Thread(target=process_emotions, args=(frame.copy(), (top, right, bottom, left))).start()\n\n        if not emotion_queue.empty():\n            face_location, emotions = emotion_queue.get()\n            if emotions:\n                top, right, bottom, left = face_location\n                sorted_emotions = sorted(emotions[0]['emotions'].items(), key=lambda x: x[1], reverse=True)\n                \n                # Toon de top 3 emoties\n                emotion_text = \" | \".join([f\"{emotion}: {conf:.2f}\" for emotion, conf in sorted_emotions[:3]])\n                cv2.putText(frame, emotion_text, (left, bottom + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)\n                \n                # Debug informatie\n                print(f\"Gedetecteerde emoties: {sorted_emotions}\")\n                \n                # Controleer op 'happy' emotie met lagere drempelwaarde\n                if sorted_emotions[0][0] == 'happy' and sorted_emotions[0][1] \u003e 0.5:\n                    face_id = next((id for id, loc in last_seen.items() if loc == current_time), None)\n                    if face_id:\n                        last_happy_time = last_happy_times.get(face_id, 0)\n                        if (current_time - last_happy_time) \u003e cooldown_time:\n                            if not waterpump_active:\n                                last_happy_times[face_id] = current_time\n                                Thread(target=activate_waterpump, args=(face_id,)).start()\n\n        for face_id in list(last_seen.keys()):\n            if current_time - last_seen[face_id] \u003e timeout:\n                if face_id in known_face_ids:\n                    index = known_face_ids.index(face_id)\n                    known_face_encodings.pop(index)\n                    known_face_ids.pop(index)\n                del last_seen[face_id]\n                print(f\"Gezicht met ID {face_id} verwijderd wegens inactiviteit.\")\n\n        cv2.imshow('Video', frame)\n\n        if cv2.waitKey(1) \u0026 0xFF == ord('q'):\n            break\n\nexcept KeyboardInterrupt:\n    print(\"Programma onderbroken door gebruiker.\")\n\nfinally:\n    video_capture.release()\n    cv2.destroyAllWindows()\n    arduino.close()\n    print(\"Programma beëindigd.\")\n\n"])</script><script>self.__next_f.push([1,"10:[]\n"])</script><script>self.__next_f.push([1,"0:[\"$\",\"$L4\",null,{\"buildId\":\"IHZomqTA5wekzsBOR-OUM\",\"assetPrefix\":\"\",\"urlParts\":[\"\",\"works\",\"face\",\"\"],\"initialTree\":[\"\",{\"children\":[\"works\",{\"children\":[\"face\",{\"children\":[\"__PAGE__\",{}]}]}]},\"$undefined\",\"$undefined\",true],\"initialSeedData\":[\"\",{\"children\":[\"works\",{\"children\":[\"face\",{\"children\":[\"__PAGE__\",{},[[\"$L5\",[[\"$\",\"div\",null,{\"className\":\"heading\",\"children\":[[\"$\",\"a\",null,{\"className\":\"back\",\"href\":\"/\",\"children\":[[\"$\",\"svg\",null,{\"width\":\"10\",\"height\":\"8\",\"viewBox\":\"0 0 10 8\",\"fill\":\"none\",\"xmlns\":\"http://www.w3.org/2000/svg\",\"children\":[[\"$\",\"g\",null,{\"clip-path\":\"url(#clip0_230_377)\",\"children\":[\"$\",\"path\",null,{\"d\":\"M0 3.80859C0 3.94824 0.0634766 4.08154 0.177734 4.18945L3.45312 7.4585C3.56738 7.56641 3.69434 7.61719 3.82764 7.61719C4.10693 7.61719 4.32275 7.40771 4.32275 7.12207C4.32275 6.98877 4.27832 6.85547 4.18311 6.7666L3.30713 5.85889L1.16162 3.9292L1.04736 4.20215L2.73584 4.32275H8.72803C9.02637 4.32275 9.23584 4.10693 9.23584 3.80859C9.23584 3.51025 9.02637 3.29443 8.72803 3.29443H2.73584L1.04736 3.41504L1.16162 3.69434L3.30713 1.7583L4.18311 0.850586C4.27832 0.761719 4.32275 0.628418 4.32275 0.495117C4.32275 0.209473 4.10693 0 3.82764 0C3.69434 0 3.56738 0.0507812 3.45312 0.158691L0.177734 3.42773C0.0634766 3.53564 0 3.66895 0 3.80859Z\",\"fill\":\"black\",\"fill-opacity\":\"0.85\"}]}],[\"$\",\"defs\",null,{\"children\":[\"$\",\"clipPath\",null,{\"id\":\"clip0_230_377\",\"children\":[\"$\",\"rect\",null,{\"width\":\"9.74365\",\"height\":\"7.62354\",\"fill\":\"white\"}]}]}]]}],\"Terug\"]}],[\"$\",\"h2\",null,{\"children\":\"Emotion detection\"}],[\"$\",\"span\",null,{\"children\":\"2024\"}]]}],\"\\n\",[\"$\",\"hr\",null,{}],\"\\n\",[\"$\",\"h3\",null,{\"children\":\"Project\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"In dit project heb ik Python en Arduino gecombineerd om een ​​interactief systeem te creëren dat reageert op menselijke uitdrukkingen. Met behulp van Python analyseerde ik gezichtsuitdrukkingen in realtime en detecteerde wanneer iemand glimlachte of lachte. Deze gegevens werden vervolgens als commando naar de Arduino gestuurd, die als reactie een waterpomp activeerde.\"}],\"\\n\",[\"$\",\"hr\",null,{}],\"\\n\",[\"$\",\"h3\",null,{\"children\":\"Uitleg code:\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Bibliotheken: Je moet de volgende Python-bibliotheken installeren. Dit kan meestal met pip, de package manager van Python. Open je terminal of command prompt en voer de volgende commando's uit:\"}],\"\\n\",[\"$\",\"pre\",null,{\"children\":[\"$\",\"code\",null,{\"children\":\"pip install opencv-python\\npip install face_recognition\\npip install fer\\n\"}]}],\"\\n\",[\"$\",\"ol\",null,{\"children\":[\"\\n\",[\"$\",\"li\",null,{\"children\":\"Importeren van bibliotheken\"}],\"\\n\"]}],\"\\n\",[\"$\",\"pre\",null,{\"children\":[\"$\",\"code\",null,{\"children\":\"import cv2\\nimport face_recognition\\nfrom fer import FER\\nimport time\\nfrom threading import Thread\\nfrom queue import Queue\\n\"}]}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Hier importeren we alle benodigde bibliotheken.\"}],\"\\n\",[\"$\",\"ol\",null,{\"start\":\"2\",\"children\":[\"\\n\",[\"$\",\"li\",null,{\"children\":\"Initialiseren van variabelen\"}],\"\\n\"]}],\"\\n\",[\"$\",\"pre\",null,{\"children\":[\"$\",\"code\",null,{\"children\":\"known_face_encodings = []\\nknown_face_ids = []\\nnext_id = 1\\nlast_seen = {}\\ntimeout = 600  # 10 minutes in seconds\\nface_detection_interval = 2\\nemotion_detection_interval = 1\\n\"}]}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"known_face_encodings: Een lijst om gezichtscoderingen van bekende gezichten op te slaan.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"known_face_ids: Een lijst om ID's van bekende gezichten op te slaan.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"next_id: Een teller voor het genereren van nieuwe ID's.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"last_seen: Een dictionary om de tijd bij te houden dat elk gezicht voor het laatst is gezien.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"timeout: De tijd (in seconden) waarna een gezicht wordt \\\"vergeten\\\".\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"face_detection_interval: Bepaalt hoe vaak de code naar nieuwe gezichten zoekt, hoe hoger de waarde hoe minder vaak de code gezichten herkent.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"emotion_detection_interval: Bepaalt hoe vaak de code naar emoties zoekt.\"}],\"\\n\",[\"$\",\"ol\",null,{\"start\":\"3\",\"children\":[\"\\n\",[\"$\",\"li\",null,{\"children\":\"Initialiseren van de emotiedetector en video capture\"}],\"\\n\"]}],\"\\n\",[\"$\",\"pre\",null,{\"children\":[\"$\",\"code\",null,{\"children\":\"emotion_detector = FER(mtcnn=True)\\nvideo_capture = cv2.VideoCapture(0)\\nvideo_capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)\\nvideo_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)\\n\"}]}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"FER(mtcnn=True): Initialiseert de Face Emotion Recognizer met MTCNN voor gezichtsdetectie.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"cv2.VideoCapture(0): Start de webcam (0 is de standaard webcam).\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"video_capture.set(): Stelt de resolutie van de video in.\"}],\"\\n\",[\"$\",\"ol\",null,{\"start\":\"4\",\"children\":[\"\\n\",[\"$\",\"li\",null,{\"children\":\"Afdrukken van Startbericht\"}],\"\\n\"]}],\"\\n\",[\"$\",\"pre\",null,{\"children\":[\"$\",\"code\",null,{\"children\":\"print(\\\"Programma gestart. Druk op 'q' om te stoppen.\\\")\\n\"}]}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Druk een bericht af dat het programma gestart is\"}],\"\\n\",[\"$\",\"ol\",null,{\"start\":\"5\",\"children\":[\"\\n\",[\"$\",\"li\",null,{\"children\":\"Queue initialisatie en frame count\"}],\"\\n\"]}],\"\\n\",[\"$\",\"pre\",null,{\"children\":[\"$\",\"code\",null,{\"children\":\"frame_count = 0\\nface_queue = Queue(maxsize=5)\\nemotion_queue = Queue(maxsize=5)\\n\"}]}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"frame_count: Houdt bij welk frame verwerkt wordt om bewerkingen om de zoveel frames uit te voeren\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"face_queue: Een queue (wachtrij) om de gedetecteerde gezichten en coderingen door te geven aan de main thread.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"emotion_queue: Een queue om de gedetecteerde emoties door te geven aan de main thread.\"}],\"\\n\",[\"$\",\"ol\",null,{\"start\":\"6\",\"children\":[\"\\n\",[\"$\",\"li\",null,{\"children\":\"Process Face functie\"}],\"\\n\"]}],\"\\n\",[\"$\",\"pre\",null,{\"children\":[\"$\",\"code\",null,{\"children\":\"def process_faces(frame):\\n    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)\\n    face_locations = face_recognition.face_locations(rgb_frame, model=\\\"hog\\\")\\n    face_encodings = face_recognition.face_encodings(rgb_frame, face_locations)\\n    face_queue.put((face_locations, face_encodings))\\n\"}]}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Deze functie wordt op een aparte thread uitgevoerd en detecteert gezichten in een frame.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"De resultaten (locaties en coderingen) worden in face_queue geplaatst.\"}],\"\\n\",[\"$\",\"ol\",null,{\"start\":\"7\",\"children\":[\"\\n\",[\"$\",\"li\",null,{\"children\":\"Process Emotion functie\"}],\"\\n\"]}],\"\\n\",[\"$\",\"pre\",null,{\"children\":[\"$\",\"code\",null,{\"children\":\"def process_emotions(frame, face_location):\\n    top, right, bottom, left = face_location\\n    face_image = frame[top:bottom, left:right]\\n    emotions = emotion_detector.detect_emotions(face_image)\\n    emotion_queue.put((face_location, emotions))\\n\"}]}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Deze functie, ook op een aparte thread, detecteert emoties in een gezichtsgebied.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"De resultaten (locatie en emoties) worden in emotion_queue geplaatst.\"}],\"\\n\",[\"$\",\"ol\",null,{\"start\":\"8\",\"children\":[\"\\n\",[\"$\",\"li\",null,{\"children\":\"Main loop\"}],\"\\n\"]}],\"\\n\",[\"$\",\"pre\",null,{\"children\":[\"$\",\"code\",null,{\"children\":\"$6\"}]}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"video_capture.read(): Leest een frame van de webcam.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Face detectie thread: Als het interval is bereikt, start een thread om gezichten te detecteren\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Face handling: Haalt gezichten uit de queue. Vergelijkt met bekende gezichten of maakt een nieuw gezicht aan. Tekent een rechthoek om het gezicht en plaatst de ID.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Emotion detectie thread: Als het interval is bereikt, start een thread om de emoties op het gezicht te detecteren\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Emotion handling: Haalt de locatie van het gezicht en de bijbehorende emotie uit de queue, en tekent de emotie op het scherm.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Inactiviteitscontrole: Verwijdert gezichten die te lang niet zijn gezien.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"cv2.imshow(): Toont de video met herkenning en emoties.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"cv2.waitKey(): Wacht op een toetsaanslag. Stopt de loop als 'q' wordt ingedrukt.\"}],\"\\n\",[\"$\",\"ol\",null,{\"start\":\"9\",\"children\":[\"\\n\",[\"$\",\"li\",null,{\"children\":\"Afsluitprocedures\"}],\"\\n\"]}],\"\\n\",[\"$\",\"pre\",null,{\"children\":[\"$\",\"code\",null,{\"children\":\"except KeyboardInterrupt:\\n    print(\\\"Programma onderbroken door gebruiker.\\\")\\n\\nfinally:\\n    video_capture.release()\\n    cv2.destroyAllWindows()\\n    print(\\\"Programma beëindigd.\\\")\\n\"}]}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"KeyboardInterrupt: Vangt een toetsenbord onderbreking op (bijv. Ctrl+C).\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"finally:: Sluit de webcam en de vensters af, zelfs als er een fout optreedt.\"}],\"\\n\",[\"$\",\"hr\",null,{}],\"\\n\",[\"$\",\"h3\",null,{\"children\":\"Complete code:\"}],\"\\n\",[\"$\",\"pre\",null,{\"children\":[\"$\",\"code\",null,{\"className\":\"language-python\",\"children\":\"$7\"}]}],\"\\n\",[\"$\",\"div\",null,{\"style\":{\"maxWidth\":\"800px\",\"margin\":\"0 auto\",\"marginBottom\":\"20px\"},\"children\":[\"$\",\"$L8\",null,{\"src\":\"/images/facereading.png\",\"alt\":\"Codeface\",\"layout\":\"responsive\",\"width\":600,\"height\":400}]}],\"\\n\",[\"$\",\"hr\",null,{}],\"\\n\",[\"$\",\"h3\",null,{\"children\":\"Code met arduino:\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Hieronder een vergelijking van de code met Arduino-integratie versus de code zonder, met de nadruk op de veranderingen in elke sectie:\"}],\"\\n\",[\"$\",\"ol\",null,{\"children\":[\"\\n\",[\"$\",\"li\",null,{\"children\":[\"\\n\",[\"$\",\"p\",null,{\"children\":\"Arduino Serial Communicatie:\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"import serial: De serial bibliotheek is geïmporteerd om communicatie met de Arduino mogelijk te maken.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"arduino = serial.Serial('COM5', 9600): Initialiseert een seriële verbinding met de Arduino op de opgegeven COM-poort (hier COM5) en met een baudrate van 9600. Je moet de COM-poort aanpassen aan je eigen setup.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"time.sleep(2): Wacht 2 seconden om de seriële verbinding te laten opzetten.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"arduino.write(b'WATER_ON') en arduino.write(b'WATER_OFF'): Stuurt commando's naar de Arduino (in bytes) om de waterpomp aan en uit te schakelen.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"arduino.close(): Sluit de seriële verbinding aan het einde van het programma.\"}],\"\\n\"]}],\"\\n\",[\"$\",\"li\",null,{\"children\":[\"\\n\",[\"$\",\"p\",null,{\"children\":\"Waterpomp Functionaliteit:\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"cooldown_time = 120: Een variabele die de minimale tijd (in seconden) tussen de waterpompactivaties bepaalt.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"waterpump_active = False: Een vlag om aan te geven of de waterpomp momenteel actief is.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":[\"last_happy_times = \",\": Een dictionary om de laatste tijd bij te houden dat de waterpomp geactiveerd is voor een bepaald gezicht.\"]}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"activate_waterpump(person_id) functie: Activeert de waterpomp voor 8 seconden, na een 'happy' detectie voor een persoon. En wordt op een aparte thread uitgevoerd om de video bewerking niet te blokkeren.\"}],\"\\n\"]}],\"\\n\",[\"$\",\"li\",null,{\"children\":[\"\\n\",[\"$\",\"p\",null,{\"children\":\"Emotie Detectie en Waterpomp Activering:\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Emotie Analyse: De code kijkt nu naar de top 3 emoties en toont deze op het scherm.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"\\\"Happy\\\" Trigger: Als de detectie van happy boven een drempelwaarde (0.5) komt, en de cooldown timer is afgelopen, dan wordt de waterpomp geactiveerd via de activate_waterpump functie.\"}],\"\\n\"]}],\"\\n\",[\"$\",\"li\",null,{\"children\":[\"\\n\",[\"$\",\"p\",null,{\"children\":\"Externe Camera Fix\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"De code maakt nu gebruik van cv2.VideoCapture(1, cv2.CAP_DSHOW) om de externe camera te starten en controleerd of de camera wel is verbonden.\"}],\"\\n\"]}],\"\\n\",[\"$\",\"li\",null,{\"children\":[\"\\n\",[\"$\",\"p\",null,{\"children\":\"Debugger info\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"De code geeft nu in de terminal de gedetecteerde emoties uit.\"}],\"\\n\"]}],\"\\n\"]}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Uitleg in code per veranderingen:\"}],\"\\n\",[\"$\",\"ol\",null,{\"children\":[\"\\n\",[\"$\",\"li\",null,{\"children\":\"Importeer de serial bibliotheek:\"}],\"\\n\"]}],\"\\n\",[\"$\",\"pre\",null,{\"children\":[\"$\",\"code\",null,{\"children\":\"import serial\\n\"}]}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Nieuw: Deze bibliotheek wordt toegevoegd om seriële communicatie met de Arduino mogelijk te maken.\"}],\"\\n\",[\"$\",\"ol\",null,{\"start\":\"2\",\"children\":[\"\\n\",[\"$\",\"li\",null,{\"children\":\"Arduino Setup:\"}],\"\\n\"]}],\"\\n\",[\"$\",\"pre\",null,{\"children\":[\"$\",\"code\",null,{\"children\":\"arduino = serial.Serial('COM5', 9600)\\ntime.sleep(2)\\n\"}]}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Nieuw:\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"serial.Serial('COM5', 9600): Initialiseert de seriële communicatie met de Arduino op de opgegeven COM-poort ('COM5' in dit voorbeeld) en een baudrate van 9600.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"time.sleep(2): Wacht 2 seconden zodat de seriële verbinding stabiel tot stand kan komen.\"}],\"\\n\",[\"$\",\"ol\",null,{\"start\":\"3\",\"children\":[\"\\n\",[\"$\",\"li\",null,{\"children\":\"Gewijzigde variabelen initialisatie:\"}],\"\\n\"]}],\"\\n\",[\"$\",\"pre\",null,{\"children\":[\"$\",\"code\",null,{\"children\":\"last_happy_times = {}\\ncooldown_time = 120\\nwaterpump_active = False\\nemotion_detection_interval = 3\\n\"}]}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Nieuw:\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"last_happy_times: Een dictionary die de tijd van de laatste waterpompactivatie opslaat per persoon.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"cooldown_time: Een variabele die de cooldown periode in seconden vaststelt.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"waterpump_active: Een vlag die checkt of de waterpomp al geactiveerd is.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Gewijzigd:\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"emotion_detection_interval = 3: Is gewijzigd van 1 naar 3.\"}],\"\\n\",[\"$\",\"ol\",null,{\"start\":\"4\",\"children\":[\"\\n\",[\"$\",\"li\",null,{\"children\":\"Video Capture - Externe Camera:\"}],\"\\n\"]}],\"\\n\",[\"$\",\"pre\",null,{\"children\":[\"$\",\"code\",null,{\"children\":\"     \\nvideo_capture = cv2.VideoCapture(1, cv2.CAP_DSHOW)\\nif not video_capture.isOpened():\\n    print(\\\"Kan de externe camera niet openen. Controleer of de camera is aangesloten.\\\")\\n    exit()\\n\"}]}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Gewijzigd:\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"cv2.VideoCapture(1, cv2.CAP_DSHOW): Selecteert de externe camera.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"De code controleert nu of de camera is aangesloten en de code afsluiten als dit niet het geval is.\"}],\"\\n\",[\"$\",\"ol\",null,{\"start\":\"5\",\"children\":[\"\\n\",[\"$\",\"li\",null,{\"children\":\"activate_waterpump Functie:\"}],\"\\n\"]}],\"\\n\",[\"$\",\"pre\",null,{\"children\":[\"$\",\"code\",null,{\"children\":\"      \\ndef activate_waterpump(person_id):\\n    global waterpump_active\\n    waterpump_active = True\\n    print(f\\\"Blijdschap gedetecteerd voor {person_id}, waterpomp geactiveerd voor 8 seconden.\\\")\\n    arduino.write(b'WATER_ON')\\n    time.sleep(8)\\n    arduino.write(b'WATER_OFF')\\n    print(f\\\"Waterpomp uitgeschakeld voor {person_id}.\\\")\\n    waterpump_active = False\\n   \\n\"}]}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Nieuw: Deze functie wordt aangeroepen om de waterpomp te activeren:\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"global waterpump_active: Gebruikt de global vlag\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"waterpump_active = True: Zet de vlag naar True.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"arduino.write(b'WATER_ON'): Stuurt een signaal naar de arduino om de waterpomp aan te zetten.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"time.sleep(8): De waterpomp blijft voor 8 seconden aan.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"arduino.write(b'WATER_OFF'): Stuurt een signaal naar de arduino om de waterpomp uit te zetten.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"waterpump_active = False: Zet de flag naar False.\"}],\"\\n\",[\"$\",\"ol\",null,{\"start\":\"6\",\"children\":[\"\\n\",[\"$\",\"li\",null,{\"children\":\"Wijzigingen in de Main Loop (Emotie Handling en Pomp Activatie):\"}],\"\\n\"]}],\"\\n\",[\"$\",\"pre\",null,{\"children\":[\"$\",\"code\",null,{\"children\":\"$9\"}]}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Gewijzigd en Nieuw:\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Top Emotie Weergave: Toont nu de top 3 emoties met bijbehorende waarden op het scherm.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Debug Output: Print gedetecteerde emoties naar de console.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Happy Emotie Drempel:\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Checkt of de dominantste emotie 'happy' is met een drempel van 0.5.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Pomp Activatielogica:\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Controleert of er een gezicht is gekoppeld aan de huidige tijd.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Kijkt of de cooldowntimer is afgelopen.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Kijkt of de waterpomp al actief is\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Als dit het geval is wordt de activate_waterpump functie in een nieuwe thread gestart.\"}],\"\\n\",[\"$\",\"ol\",null,{\"start\":\"7\",\"children\":[\"\\n\",[\"$\",\"li\",null,{\"children\":\"Afsluitprocedure finally block:\"}],\"\\n\"]}],\"\\n\",[\"$\",\"pre\",null,{\"children\":[\"$\",\"code\",null,{\"children\":\"      \\nfinally:\\n    video_capture.release()\\n    cv2.destroyAllWindows()\\n    arduino.close()\\n    print(\\\"Programma beëindigd.\\\")\\n\\n\"}]}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Gewijzigd: arduino.close(): Sluit de seriële communicatie met de Arduino netjes af.\"}],\"\\n\",[\"$\",\"hr\",null,{}],\"\\n\",[\"$\",\"h3\",null,{\"children\":\"Complete code:\"}],\"\\n\",[\"$\",\"pre\",null,{\"children\":[\"$\",\"code\",null,{\"children\":\"$a\"}]}],\"\\n\",[\"$\",\"h3\",null,{\"children\":\"Arduino code:\"}],\"\\n\",[\"$\",\"pre\",null,{\"children\":[\"$\",\"code\",null,{\"children\":\"const int relayPin = 5;  // Pin waarop het relais is aangesloten\\n\\nvoid setup() {\\n  pinMode(relayPin, OUTPUT);\\n  Serial.begin(9600);  // Start seriële communicatie\\n}\\n\\nvoid loop() {\\n  if (Serial.available() \u003e 0) {\\n    String command = Serial.readStringUntil('\\\\n');  // Lees het commando van de seriële poort\\n\\n    if (command == \\\"WATER_ON\\\") {\\n      digitalWrite(relayPin, HIGH);  // Zet de pomp aan\\n    } \\n    else if (command == \\\"WATER_OFF\\\") {\\n      digitalWrite(relayPin, LOW);   // Zet de pomp uit\\n    }\\n  }\\n}\\n\"}]}]],[[\"$\",\"link\",\"0\",{\"rel\":\"stylesheet\",\"href\":\"/_next/static/css/42d4ccb0167bd621.css\",\"precedence\":\"next\",\"crossOrigin\":\"$undefined\"}]]],null],null]},[null,[\"$\",\"$Lb\",null,{\"parallelRouterKey\":\"children\",\"segmentPath\":[\"children\",\"works\",\"children\",\"face\",\"children\"],\"error\":\"$undefined\",\"errorStyles\":\"$undefined\",\"errorScripts\":\"$undefined\",\"template\":[\"$\",\"$Lc\",null,{}],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":\"$undefined\",\"notFoundStyles\":\"$undefined\"}]],null]},[null,[\"$\",\"$Lb\",null,{\"parallelRouterKey\":\"children\",\"segmentPath\":[\"children\",\"works\",\"children\"],\"error\":\"$undefined\",\"errorStyles\":\"$undefined\",\"errorScripts\":\"$undefined\",\"template\":[\"$\",\"$Lc\",null,{}],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":\"$undefined\",\"notFoundStyles\":\"$undefined\"}]],null]},[[[[\"$\",\"link\",\"0\",{\"rel\":\"stylesheet\",\"href\":\"/_next/static/css/2e217b198695519f.css\",\"precedence\":\"next\",\"crossOrigin\":\"$undefined\"}],[\"$\",\"link\",\"1\",{\"rel\":\"stylesheet\",\"href\":\"/_next/static/css/3d2178a07cfa6620.css\",\"precedence\":\"next\",\"crossOrigin\":\"$undefined\"}]],[\"$\",\"html\",null,{\"lang\":\"en\",\"className\":\"__className_d96792\",\"children\":[\"$\",\"body\",null,{\"children\":[\"$\",\"$Lb\",null,{\"parallelRouterKey\":\"children\",\"segmentPath\":[\"children\"],\"error\":\"$undefined\",\"errorStyles\":\"$undefined\",\"errorScripts\":\"$undefined\",\"template\":[\"$\",\"$Lc\",null,{}],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":[\"$\",\"div\",null,{\"className\":\"header\",\"children\":[\"$\",\"div\",null,{\"style\":{\"display\":\"flex\",\"flexDirection\":\"row\",\"gap\":24},\"children\":[\"$\",\"$Ld\",null,{\"href\":\"/\",\"className\":\"header-card hoverable-work\",\"style\":{\"display\":\"flex\",\"flexDirection\":\"column\",\"gap\":4,\"transform\":\"rotate(0deg)\",\"paddingInline\":8,\"paddingBlock\":4},\"children\":\"Er is iets niet goed gegaan.\"}]}]}],\"notFoundStyles\":[[\"$\",\"link\",\"0\",{\"rel\":\"stylesheet\",\"href\":\"/_next/static/css/8cd5cabe57454178.css\",\"precedence\":\"next\",\"crossOrigin\":\"$undefined\"}]]}]}]}]],null],null],\"couldBeIntercepted\":false,\"initialHead\":[null,\"$Le\"],\"globalErrorComponent\":\"$f\",\"missingSlots\":\"$W10\"}]\n"])</script><script>self.__next_f.push([1,"e:[[\"$\",\"meta\",\"0\",{\"name\":\"viewport\",\"content\":\"width=device-width, initial-scale=1\"}],[\"$\",\"meta\",\"1\",{\"charSet\":\"utf-8\"}],[\"$\",\"title\",\"2\",{\"children\":\"Portfolio Max\"}],[\"$\",\"meta\",\"3\",{\"name\":\"description\",\"content\":\"Portfolio site of Max Stokla\"}]]\n5:null\n"])</script></body></html>

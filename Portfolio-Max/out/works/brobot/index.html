@@ -1,0 +1,241 @@
+<!DOCTYPE html><html lang="en" class="__className_d96792"><head><meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/_next/static/css/2e217b198695519f.css" data-precedence="next"/><link rel="stylesheet" href="/_next/static/css/3d2178a07cfa6620.css" data-precedence="next"/><link rel="stylesheet" href="/_next/static/css/42d4ccb0167bd621.css" data-precedence="next"/><link rel="preload" as="script" fetchPriority="low" href="/_next/static/chunks/webpack-1e92e0f9031ffbb1.js"/><script src="/_next/static/chunks/fd9d1056-5798c5bc23aff152.js" async=""></script><script src="/_next/static/chunks/117-89198cad900451d3.js" async=""></script><script src="/_next/static/chunks/main-app-aa0c5940ccc089c7.js" async=""></script><script src="/_next/static/chunks/972-95d2cb17d6da123b.js" async=""></script><script src="/_next/static/chunks/app/not-found-afdb90c8ee883262.js" async=""></script><title>Portfolio Max</title><meta name="description" content="Portfolio site of Max Stokla"/><script src="/_next/static/chunks/polyfills-42372ed130431b0a.js" noModule=""></script></head><body><div class="heading"><a class="back" href="/"><svg width="10" height="8" viewBox="0 0 10 8" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip0_230_377)"><path d="M0 3.80859C0 3.94824 0.0634766 4.08154 0.177734 4.18945L3.45312 7.4585C3.56738 7.56641 3.69434 7.61719 3.82764 7.61719C4.10693 7.61719 4.32275 7.40771 4.32275 7.12207C4.32275 6.98877 4.27832 6.85547 4.18311 6.7666L3.30713 5.85889L1.16162 3.9292L1.04736 4.20215L2.73584 4.32275H8.72803C9.02637 4.32275 9.23584 4.10693 9.23584 3.80859C9.23584 3.51025 9.02637 3.29443 8.72803 3.29443H2.73584L1.04736 3.41504L1.16162 3.69434L3.30713 1.7583L4.18311 0.850586C4.27832 0.761719 4.32275 0.628418 4.32275 0.495117C4.32275 0.209473 4.10693 0 3.82764 0C3.69434 0 3.56738 0.0507812 3.45312 0.158691L0.177734 3.42773C0.0634766 3.53564 0 3.66895 0 3.80859Z" fill="black" fill-opacity="0.85"></path></g><defs><clipPath id="clip0_230_377"><rect width="9.74365" height="7.62354" fill="white"></rect></clipPath></defs></svg>Terug</a><h2>Onvoorspelbare robot</h2><span>2024</span></div>
+<hr/>
+<h3>Opdracht</h3>
+<p>De opdracht was om een &#x27;precarious&#x27; robot te creëren – een robot die, in mijn interpretatie, een gevoel van onzekerheid en onvoorspelbaarheid zou uitstralen. Om dit te bereiken, heb ik een robot gemaakt die opzettelijk &#x27;grillig&#x27; is in zijn gedrag. Met een Arduino heb ik een robotje geprogrammeerd waarin de robot met een kans van 70% een commando negeert en met 30% kans uitvoert. De robot kan vier richtingen op (L, F, B, R) op basis van commando’s als &#x27;L5&#x27; of &#x27;F2&#x27;, wat bijdraagt aan het onvoorspelbare en dynamische karakter.</p>
+<hr/>
+<h3>uitleg code</h3>
+<p>Bibliotheken (#include):</p>
+<pre><code>    #include &lt;WiFi.h&gt;: Deze regel importeert de bibliotheek die nodig is om verbinding te maken met een WiFi-netwerk. Hiermee kun je de Arduino verbinden met je thuis- of werknetwerk.
+
+    #include &lt;WiFiUdp.h&gt;: Deze bibliotheek is nodig voor UDP (User Datagram Protocol) communicatie via WiFi. UDP is een protocol voor het verzenden van berichten (packets), die niet gegarandeerd aankomen, maar dit maakt de communicatie snel.
+
+    #include &lt;Servo.h&gt;: Deze bibliotheek zorgt voor de aansturing van servo motoren. Je kunt er servo motoren mee positioneren op specifieke hoeken, die dan een bepaalde snelheid opleveren.
+</code></pre>
+<p>WiFi-instellingen:</p>
+<pre><code>const char* ssid = &quot;x&quot;;
+const char* password = &quot;x&quot;;
+</code></pre>
+<p>Deze regels definiëren de constante strings voor de SSID (naam) en het wachtwoord van je WiFi-netwerk. Je moet de x hier vervangen door je eigen netwerknaam en wachtwoord.</p>
+<p>Servo-objecten en -pinnen:</p>
+<pre><code>Servo leftServo;
+Servo rightServo;
+const int leftServoPin = 9;
+const int rightServoPin = 10;
+</code></pre>
+<p>Hier worden objecten (leftServo en rightServo) gemaakt van de Servo klasse. Deze objecten gebruik je om de servo motoren aan te sturen. Ook worden de pins gedefinieerd waar de servo motoren op zijn aangesloten.</p>
+<p>UDP-instellingen:</p>
+<pre><code>WiFiUDP Udp;
+unsigned int localPort = 4210;
+char incomingPacket[255];
+</code></pre>
+<p>WiFiUDP Udp;: Maakt een object aan voor de UDP-communicatie.</p>
+<p>unsigned int localPort = 4210;: Specificeert de poort waarop de Arduino luistert naar UDP-berichten (4210 is een voorbeeld, je kunt dit aanpassen).</p>
+<p>char incomingPacket[255];: Maakt een buffer aan om de inkomende berichten op te slaan.</p>
+<p>Snelheidsinstellingen:</p>
+<pre><code>const int LEFT_FORWARD_SPEED = 0;
+const int LEFT_BACKWARD_SPEED = 180;
+const int RIGHT_FORWARD_SPEED = 180;
+const int RIGHT_BACKWARD_SPEED = 0;
+const int STOP_SPEED = 90;
+</code></pre>
+<p>Deze variabelen zijn constanten en definiëren de posities van de servo&#x27;s die overeenkomen met vooruit, achteruit en stoppen. De exacte getallen kunnen variëren afhankelijk van de servo&#x27;s die je gebruikt. Je kunt zelf experimenteren wat de juiste standen zijn voor jouw setup. De standen bepalen hoe de servo draait (snelheid en richting).</p>
+<p>setup() functie:</p>
+<pre><code>void setup() {
+  Serial.begin(9600);
+  Serial.println(&quot;Verbinden met WiFi...&quot;);
+
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.print(&quot;.&quot;);
+  }
+  // ... (rest van de setup code)
+}
+</code></pre>
+<p>Serial.begin(9600);: Start seriële communicatie voor het printen van debug informatie.</p>
+<p>Serial.println(&quot;Verbinden met WiFi...&quot;);: Print een bericht om aan te geven dat de verbinding met WiFi wordt gestart.</p>
+<p>WiFi.begin(ssid, password);: Start de WiFi verbinding met de opgegeven ssid en password.</p>
+<pre><code>    while (WiFi.status() != WL_CONNECTED) { ... }: Wacht tot de verbinding tot stand is gebracht.
+</code></pre>
+<p>delay(1000);: Wacht 1 seconde.</p>
+<p>Serial.print(&quot;.&quot;);: Print een punt om te laten zien dat het nog steeds bezig is met verbinden.</p>
+<p>Udp.begin(localPort);: Start de UDP server op het lokale poortnummer.</p>
+<p>loop() functie:</p>
+<pre><code>int packetSize = Udp.parsePacket();
+  if (packetSize) {
+    int n = Udp.read(incomingPacket, 255);
+    if (n &gt; 0) {
+      incomingPacket[n] = 0;
+    }
+    Serial.print(&quot;Ontvangen commando: &quot;);
+    Serial.println(incomingPacket);
+
+    int packetSize = Udp.parsePacket();: Controleert of er een nieuw pakket is binnengekomen en slaat de grootte ervan op.
+
+    if (packetSize): Als er een pakket is ontvangen.
+
+    int n = Udp.read(incomingPacket, 255);: Leest de data in de buffer.
+
+    if (n &gt; 0) { incomingPacket[n] = 0; }: Voegt een null-terminator (\0) toe aan het einde van de buffer om er een geldige C-string van te maken. Dit is nodig voor functies zoals atoi() die C-strings verwachten.
+
+    Serial.print(...) en Serial.println(...): Print debug informatie.
+
+      
+if (incomingPacket[0] == &#x27;V&#x27;) {
+        int duration = atoi(&amp;incomingPacket[1]);
+        moveForward(duration);
+      // ... (andere commando&#x27;s)
+      }
+</code></pre>
+<p>Hier wordt de ontvangen string gecontroleerd. incomingPacket[0] is de eerste letter die de actie aangeeft (V voor vooruit, A voor achteruit, etc.).</p>
+<p>int duration = atoi(&amp;incomingPacket[1]);: De functie atoi() (ASCII to integer) wordt gebruikt om het deel van de string na de eerste letter, die de duur in seconden aangeeft, om te zetten in een getal.</p>
+<p>Bewegingsfuncties (moveForward, moveBackward, turnLeft, turnRight):</p>
+<p>Deze functies stellen de servo&#x27;s in op de juiste posities, zodat de robot beweegt of draait in de gewenste richting, voor de gespecificeerde tijd, en roepen vervolgens de stopfunctie aan.</p>
+<p>stopMoving() functie:</p>
+<p>Deze functie zet beide servo’s naar de stop positie en wacht een halve seconde zodat het volledig tot stilstand komt.</p>
+<p>Arduino code:</p>
+<pre><code class="language-Arduino">#include &lt;WiFi.h&gt;
+#include &lt;WiFiUdp.h&gt;
+#include &lt;Servo.h&gt;
+
+// WiFi-instellingen
+const char* ssid = &quot;x&quot;;
+const char* password = &quot;x&quot;;
+
+// Maak servo-objecten voor beide servo&#x27;s
+Servo leftServo;
+Servo rightServo;
+
+// Definieer de pinnen voor de servo&#x27;s
+const int leftServoPin = 9; // Verander indien nodig
+const int rightServoPin = 10; // Verander indien nodig
+
+// UDP-instellingen
+WiFiUDP Udp;
+unsigned int localPort = 4210;      // Lokale poort waarop de Arduino luistert
+char incomingPacket[255];            // Buffer voor inkomende packets
+
+// Snelheidsinstellingen
+const int LEFT_FORWARD_SPEED = 0;   // Pas dit aan voor linker servo snelheid
+const int LEFT_BACKWARD_SPEED = 180;
+const int RIGHT_FORWARD_SPEED = 180; // Pas dit aan voor rechter servo snelheid
+const int RIGHT_BACKWARD_SPEED = 0;
+const int STOP_SPEED = 90;            // Stoppositie
+
+void setup() {
+  Serial.begin(9600);
+  Serial.println(&quot;Verbinden met WiFi...&quot;);
+
+  // Verbind met WiFi-netwerk
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.print(&quot;.&quot;);
+  }
+
+  // Verbinding is gemaakt
+  Serial.println(&quot;\nVerbonden met WiFi!&quot;);
+
+  // Toon het IP-adres
+  Serial.print(&quot;IP-adres: &quot;);
+  Serial.println(WiFi.localIP()); // Toon het IP-adres
+  Udp.begin(localPort); // Begin met het luisteren naar UDP-pakketten op de lokale poort
+  Serial.print(&quot;Luisteren op UDP-poort &quot;);
+  Serial.println(localPort);
+
+  // Verbind de servo&#x27;s met hun pinnen
+  leftServo.attach(leftServoPin);
+  rightServo.attach(rightServoPin);
+}
+
+void loop() {
+  // Controleer of er een nieuw pakket is ontvangen
+  int packetSize = Udp.parsePacket();
+  if (packetSize) {
+    // Lees het pakket in
+    int n = Udp.read(incomingPacket, 255);
+    if (n &gt; 0) {
+      incomingPacket[n] = 0; // Voeg een null-terminator toe
+    }
+    Serial.print(&quot;Ontvangen commando: &quot;);
+    Serial.println(incomingPacket); // Gebruik println om de ontvangen gegevens weer te geven
+    
+    // Verwerk de ontvangen commando&#x27;s
+    if (incomingPacket[0] == &#x27;V&#x27;) { // Vooruit
+      int duration = atoi(&amp;incomingPacket[1]); // Haal de tijd op
+      moveForward(duration);
+    } else if (incomingPacket[0] == &#x27;A&#x27;) { // Achteruit
+      int duration = atoi(&amp;incomingPacket[1]); // Haal de tijd op
+      moveBackward(duration);
+    } else if (incomingPacket[0] == &#x27;L&#x27;) { // Links draaien
+      int duration = atoi(&amp;incomingPacket[1]); // Haal de tijd op
+      turnLeft(duration);
+    } else if (incomingPacket[0] == &#x27;R&#x27;) { // Rechts draaien
+      int duration = atoi(&amp;incomingPacket[1]); // Haal de tijd op
+      turnRight(duration);
+    } else {
+      Serial.println(&quot;Ongeldig commando. Gebruik V, A, L, of R gevolgd door de tijd.&quot;);
+    }
+  }
+}
+
+// Functie om vooruit te bewegen
+void moveForward(int seconds) {
+  leftServo.write(LEFT_FORWARD_SPEED);
+  rightServo.write(RIGHT_FORWARD_SPEED);
+  delay(seconds * 1000);
+  stopMoving();
+}
+
+// Functie om achteruit te bewegen
+void moveBackward(int seconds) {
+  leftServo.write(LEFT_BACKWARD_SPEED);
+  rightServo.write(RIGHT_BACKWARD_SPEED);
+  delay(seconds * 1000);
+  stopMoving();
+}
+
+// Functie om links te draaien
+void turnLeft(int seconds) {
+  leftServo.write(LEFT_BACKWARD_SPEED);
+  rightServo.write(RIGHT_FORWARD_SPEED);
+  delay(seconds * 1000);
+  stopMoving();
+}
+
+// Functie om rechts te draaien
+void turnRight(int seconds) {
+  leftServo.write(LEFT_FORWARD_SPEED);
+  rightServo.write(RIGHT_BACKWARD_SPEED);
+  delay(seconds * 1000);
+  stopMoving();
+}
+
+// Functie om te stoppen
+void stopMoving() {
+  leftServo.write(STOP_SPEED);
+  rightServo.write(STOP_SPEED);
+  delay(500);
+}
+;
+</code></pre>
+<p>Code om de commando&#x27;s uit te voeren:</p>
+<pre><code>import socket
+
+# Vervang dit door het IP-adres van je Arduino
+UDP_IP = &quot;.....&quot;  
+UDP_PORT = 4210
+
+# Maak een UDP-socket aan
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+while True:
+    command = input(&quot;Voer een commando in (bijv. &#x27;V2&#x27; voor vooruit 2 seconden, &#x27;A2&#x27; voor achteruit 2 seconden): &quot;)
+    if command:  # Zorg ervoor dat er een invoer is
+        sock.sendto(command.encode(), (UDP_IP, UDP_PORT))
+        print(f&quot;Verzonden commando: {command}&quot;)
+</code></pre>
+<p>Videos:</p>
+<!-- -->
+<video controls="" width="800"><source src="/videos/RobotV2.mp4" type="video/mp4"/><p>Your browser does not support the video tag.</p></video>
+<video controls="" width="800"><source src="/videos/Robot1.mp4" type="video/mp4"/><p>Your browser does not support the video tag. Moet nog gedraaid worden</p></video><script src="/_next/static/chunks/webpack-1e92e0f9031ffbb1.js" async=""></script><script>(self.__next_f=self.__next_f||[]).push([0]);self.__next_f.push([2,null])</script><script>self.__next_f.push([1,"1:HL[\"/_next/static/css/2e217b198695519f.css\",\"style\"]\n2:HL[\"/_next/static/css/3d2178a07cfa6620.css\",\"style\"]\n3:HL[\"/_next/static/css/42d4ccb0167bd621.css\",\"style\"]\n"])</script><script>self.__next_f.push([1,"4:I[2846,[],\"\"]\n7:I[4707,[],\"\"]\n8:I[6423,[],\"\"]\n9:I[2972,[\"972\",\"static/chunks/972-95d2cb17d6da123b.js\",\"160\",\"static/chunks/app/not-found-afdb90c8ee883262.js\"],\"\"]\nb:I[1060,[],\"\"]\n6:Te01,"])</script><script>self.__next_f.push([1,"#include \u003cWiFi.h\u003e\n#include \u003cWiFiUdp.h\u003e\n#include \u003cServo.h\u003e\n\n// WiFi-instellingen\nconst char* ssid = \"x\";\nconst char* password = \"x\";\n\n// Maak servo-objecten voor beide servo's\nServo leftServo;\nServo rightServo;\n\n// Definieer de pinnen voor de servo's\nconst int leftServoPin = 9; // Verander indien nodig\nconst int rightServoPin = 10; // Verander indien nodig\n\n// UDP-instellingen\nWiFiUDP Udp;\nunsigned int localPort = 4210;      // Lokale poort waarop de Arduino luistert\nchar incomingPacket[255];            // Buffer voor inkomende packets\n\n// Snelheidsinstellingen\nconst int LEFT_FORWARD_SPEED = 0;   // Pas dit aan voor linker servo snelheid\nconst int LEFT_BACKWARD_SPEED = 180;\nconst int RIGHT_FORWARD_SPEED = 180; // Pas dit aan voor rechter servo snelheid\nconst int RIGHT_BACKWARD_SPEED = 0;\nconst int STOP_SPEED = 90;            // Stoppositie\n\nvoid setup() {\n  Serial.begin(9600);\n  Serial.println(\"Verbinden met WiFi...\");\n\n  // Verbind met WiFi-netwerk\n  WiFi.begin(ssid, password);\n  while (WiFi.status() != WL_CONNECTED) {\n    delay(1000);\n    Serial.print(\".\");\n  }\n\n  // Verbinding is gemaakt\n  Serial.println(\"\\nVerbonden met WiFi!\");\n\n  // Toon het IP-adres\n  Serial.print(\"IP-adres: \");\n  Serial.println(WiFi.localIP()); // Toon het IP-adres\n  Udp.begin(localPort); // Begin met het luisteren naar UDP-pakketten op de lokale poort\n  Serial.print(\"Luisteren op UDP-poort \");\n  Serial.println(localPort);\n\n  // Verbind de servo's met hun pinnen\n  leftServo.attach(leftServoPin);\n  rightServo.attach(rightServoPin);\n}\n\nvoid loop() {\n  // Controleer of er een nieuw pakket is ontvangen\n  int packetSize = Udp.parsePacket();\n  if (packetSize) {\n    // Lees het pakket in\n    int n = Udp.read(incomingPacket, 255);\n    if (n \u003e 0) {\n      incomingPacket[n] = 0; // Voeg een null-terminator toe\n    }\n    Serial.print(\"Ontvangen commando: \");\n    Serial.println(incomingPacket); // Gebruik println om de ontvangen gegevens weer te geven\n    \n    // Verwerk de ontvangen commando's\n    if (incomingPacket[0] == 'V') { // Vooruit\n      int duration = atoi(\u0026incomingPacket[1]); // Haal de tijd op\n      moveForward(duration);\n    } else if (incomingPacket[0] == 'A') { // Achteruit\n      int duration = atoi(\u0026incomingPacket[1]); // Haal de tijd op\n      moveBackward(duration);\n    } else if (incomingPacket[0] == 'L') { // Links draaien\n      int duration = atoi(\u0026incomingPacket[1]); // Haal de tijd op\n      turnLeft(duration);\n    } else if (incomingPacket[0] == 'R') { // Rechts draaien\n      int duration = atoi(\u0026incomingPacket[1]); // Haal de tijd op\n      turnRight(duration);\n    } else {\n      Serial.println(\"Ongeldig commando. Gebruik V, A, L, of R gevolgd door de tijd.\");\n    }\n  }\n}\n\n// Functie om vooruit te bewegen\nvoid moveForward(int seconds) {\n  leftServo.write(LEFT_FORWARD_SPEED);\n  rightServo.write(RIGHT_FORWARD_SPEED);\n  delay(seconds * 1000);\n  stopMoving();\n}\n\n// Functie om achteruit te bewegen\nvoid moveBackward(int seconds) {\n  leftServo.write(LEFT_BACKWARD_SPEED);\n  rightServo.write(RIGHT_BACKWARD_SPEED);\n  delay(seconds * 1000);\n  stopMoving();\n}\n\n// Functie om links te draaien\nvoid turnLeft(int seconds) {\n  leftServo.write(LEFT_BACKWARD_SPEED);\n  rightServo.write(RIGHT_FORWARD_SPEED);\n  delay(seconds * 1000);\n  stopMoving();\n}\n\n// Functie om rechts te draaien\nvoid turnRight(int seconds) {\n  leftServo.write(LEFT_FORWARD_SPEED);\n  rightServo.write(RIGHT_BACKWARD_SPEED);\n  delay(seconds * 1000);\n  stopMoving();\n}\n\n// Functie om te stoppen\nvoid stopMoving() {\n  leftServo.write(STOP_SPEED);\n  rightServo.write(STOP_SPEED);\n  delay(500);\n}\n;\n"])</script><script>self.__next_f.push([1,"c:[]\n"])</script><script>self.__next_f.push([1,"0:[\"$\",\"$L4\",null,{\"buildId\":\"IHZomqTA5wekzsBOR-OUM\",\"assetPrefix\":\"\",\"urlParts\":[\"\",\"works\",\"brobot\",\"\"],\"initialTree\":[\"\",{\"children\":[\"works\",{\"children\":[\"brobot\",{\"children\":[\"__PAGE__\",{}]}]}]},\"$undefined\",\"$undefined\",true],\"initialSeedData\":[\"\",{\"children\":[\"works\",{\"children\":[\"brobot\",{\"children\":[\"__PAGE__\",{},[[\"$L5\",[[\"$\",\"div\",null,{\"className\":\"heading\",\"children\":[[\"$\",\"a\",null,{\"className\":\"back\",\"href\":\"/\",\"children\":[[\"$\",\"svg\",null,{\"width\":\"10\",\"height\":\"8\",\"viewBox\":\"0 0 10 8\",\"fill\":\"none\",\"xmlns\":\"http://www.w3.org/2000/svg\",\"children\":[[\"$\",\"g\",null,{\"clip-path\":\"url(#clip0_230_377)\",\"children\":[\"$\",\"path\",null,{\"d\":\"M0 3.80859C0 3.94824 0.0634766 4.08154 0.177734 4.18945L3.45312 7.4585C3.56738 7.56641 3.69434 7.61719 3.82764 7.61719C4.10693 7.61719 4.32275 7.40771 4.32275 7.12207C4.32275 6.98877 4.27832 6.85547 4.18311 6.7666L3.30713 5.85889L1.16162 3.9292L1.04736 4.20215L2.73584 4.32275H8.72803C9.02637 4.32275 9.23584 4.10693 9.23584 3.80859C9.23584 3.51025 9.02637 3.29443 8.72803 3.29443H2.73584L1.04736 3.41504L1.16162 3.69434L3.30713 1.7583L4.18311 0.850586C4.27832 0.761719 4.32275 0.628418 4.32275 0.495117C4.32275 0.209473 4.10693 0 3.82764 0C3.69434 0 3.56738 0.0507812 3.45312 0.158691L0.177734 3.42773C0.0634766 3.53564 0 3.66895 0 3.80859Z\",\"fill\":\"black\",\"fill-opacity\":\"0.85\"}]}],[\"$\",\"defs\",null,{\"children\":[\"$\",\"clipPath\",null,{\"id\":\"clip0_230_377\",\"children\":[\"$\",\"rect\",null,{\"width\":\"9.74365\",\"height\":\"7.62354\",\"fill\":\"white\"}]}]}]]}],\"Terug\"]}],[\"$\",\"h2\",null,{\"children\":\"Onvoorspelbare robot\"}],[\"$\",\"span\",null,{\"children\":\"2024\"}]]}],\"\\n\",[\"$\",\"hr\",null,{}],\"\\n\",[\"$\",\"h3\",null,{\"children\":\"Opdracht\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"De opdracht was om een 'precarious' robot te creëren – een robot die, in mijn interpretatie, een gevoel van onzekerheid en onvoorspelbaarheid zou uitstralen. Om dit te bereiken, heb ik een robot gemaakt die opzettelijk 'grillig' is in zijn gedrag. Met een Arduino heb ik een robotje geprogrammeerd waarin de robot met een kans van 70% een commando negeert en met 30% kans uitvoert. De robot kan vier richtingen op (L, F, B, R) op basis van commando’s als 'L5' of 'F2', wat bijdraagt aan het onvoorspelbare en dynamische karakter.\"}],\"\\n\",[\"$\",\"hr\",null,{}],\"\\n\",[\"$\",\"h3\",null,{\"children\":\"uitleg code\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Bibliotheken (#include):\"}],\"\\n\",[\"$\",\"pre\",null,{\"children\":[\"$\",\"code\",null,{\"children\":\"    #include \u003cWiFi.h\u003e: Deze regel importeert de bibliotheek die nodig is om verbinding te maken met een WiFi-netwerk. Hiermee kun je de Arduino verbinden met je thuis- of werknetwerk.\\n\\n    #include \u003cWiFiUdp.h\u003e: Deze bibliotheek is nodig voor UDP (User Datagram Protocol) communicatie via WiFi. UDP is een protocol voor het verzenden van berichten (packets), die niet gegarandeerd aankomen, maar dit maakt de communicatie snel.\\n\\n    #include \u003cServo.h\u003e: Deze bibliotheek zorgt voor de aansturing van servo motoren. Je kunt er servo motoren mee positioneren op specifieke hoeken, die dan een bepaalde snelheid opleveren.\\n\"}]}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"WiFi-instellingen:\"}],\"\\n\",[\"$\",\"pre\",null,{\"children\":[\"$\",\"code\",null,{\"children\":\"const char* ssid = \\\"x\\\";\\nconst char* password = \\\"x\\\";\\n\"}]}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Deze regels definiëren de constante strings voor de SSID (naam) en het wachtwoord van je WiFi-netwerk. Je moet de x hier vervangen door je eigen netwerknaam en wachtwoord.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Servo-objecten en -pinnen:\"}],\"\\n\",[\"$\",\"pre\",null,{\"children\":[\"$\",\"code\",null,{\"children\":\"Servo leftServo;\\nServo rightServo;\\nconst int leftServoPin = 9;\\nconst int rightServoPin = 10;\\n\"}]}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Hier worden objecten (leftServo en rightServo) gemaakt van de Servo klasse. Deze objecten gebruik je om de servo motoren aan te sturen. Ook worden de pins gedefinieerd waar de servo motoren op zijn aangesloten.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"UDP-instellingen:\"}],\"\\n\",[\"$\",\"pre\",null,{\"children\":[\"$\",\"code\",null,{\"children\":\"WiFiUDP Udp;\\nunsigned int localPort = 4210;\\nchar incomingPacket[255];\\n\"}]}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"WiFiUDP Udp;: Maakt een object aan voor de UDP-communicatie.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"unsigned int localPort = 4210;: Specificeert de poort waarop de Arduino luistert naar UDP-berichten (4210 is een voorbeeld, je kunt dit aanpassen).\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"char incomingPacket[255];: Maakt een buffer aan om de inkomende berichten op te slaan.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Snelheidsinstellingen:\"}],\"\\n\",[\"$\",\"pre\",null,{\"children\":[\"$\",\"code\",null,{\"children\":\"const int LEFT_FORWARD_SPEED = 0;\\nconst int LEFT_BACKWARD_SPEED = 180;\\nconst int RIGHT_FORWARD_SPEED = 180;\\nconst int RIGHT_BACKWARD_SPEED = 0;\\nconst int STOP_SPEED = 90;\\n\"}]}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Deze variabelen zijn constanten en definiëren de posities van de servo's die overeenkomen met vooruit, achteruit en stoppen. De exacte getallen kunnen variëren afhankelijk van de servo's die je gebruikt. Je kunt zelf experimenteren wat de juiste standen zijn voor jouw setup. De standen bepalen hoe de servo draait (snelheid en richting).\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"setup() functie:\"}],\"\\n\",[\"$\",\"pre\",null,{\"children\":[\"$\",\"code\",null,{\"children\":\"void setup() {\\n  Serial.begin(9600);\\n  Serial.println(\\\"Verbinden met WiFi...\\\");\\n\\n  WiFi.begin(ssid, password);\\n  while (WiFi.status() != WL_CONNECTED) {\\n    delay(1000);\\n    Serial.print(\\\".\\\");\\n  }\\n  // ... (rest van de setup code)\\n}\\n\"}]}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Serial.begin(9600);: Start seriële communicatie voor het printen van debug informatie.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Serial.println(\\\"Verbinden met WiFi...\\\");: Print een bericht om aan te geven dat de verbinding met WiFi wordt gestart.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"WiFi.begin(ssid, password);: Start de WiFi verbinding met de opgegeven ssid en password.\"}],\"\\n\",[\"$\",\"pre\",null,{\"children\":[\"$\",\"code\",null,{\"children\":\"    while (WiFi.status() != WL_CONNECTED) { ... }: Wacht tot de verbinding tot stand is gebracht.\\n\"}]}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"delay(1000);: Wacht 1 seconde.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Serial.print(\\\".\\\");: Print een punt om te laten zien dat het nog steeds bezig is met verbinden.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Udp.begin(localPort);: Start de UDP server op het lokale poortnummer.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"loop() functie:\"}],\"\\n\",[\"$\",\"pre\",null,{\"children\":[\"$\",\"code\",null,{\"children\":\"int packetSize = Udp.parsePacket();\\n  if (packetSize) {\\n    int n = Udp.read(incomingPacket, 255);\\n    if (n \u003e 0) {\\n      incomingPacket[n] = 0;\\n    }\\n    Serial.print(\\\"Ontvangen commando: \\\");\\n    Serial.println(incomingPacket);\\n\\n    int packetSize = Udp.parsePacket();: Controleert of er een nieuw pakket is binnengekomen en slaat de grootte ervan op.\\n\\n    if (packetSize): Als er een pakket is ontvangen.\\n\\n    int n = Udp.read(incomingPacket, 255);: Leest de data in de buffer.\\n\\n    if (n \u003e 0) { incomingPacket[n] = 0; }: Voegt een null-terminator (\\\\0) toe aan het einde van de buffer om er een geldige C-string van te maken. Dit is nodig voor functies zoals atoi() die C-strings verwachten.\\n\\n    Serial.print(...) en Serial.println(...): Print debug informatie.\\n\\n      \\nif (incomingPacket[0] == 'V') {\\n        int duration = atoi(\u0026incomingPacket[1]);\\n        moveForward(duration);\\n      // ... (andere commando's)\\n      }\\n\"}]}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Hier wordt de ontvangen string gecontroleerd. incomingPacket[0] is de eerste letter die de actie aangeeft (V voor vooruit, A voor achteruit, etc.).\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"int duration = atoi(\u0026incomingPacket[1]);: De functie atoi() (ASCII to integer) wordt gebruikt om het deel van de string na de eerste letter, die de duur in seconden aangeeft, om te zetten in een getal.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Bewegingsfuncties (moveForward, moveBackward, turnLeft, turnRight):\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Deze functies stellen de servo's in op de juiste posities, zodat de robot beweegt of draait in de gewenste richting, voor de gespecificeerde tijd, en roepen vervolgens de stopfunctie aan.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"stopMoving() functie:\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Deze functie zet beide servo’s naar de stop positie en wacht een halve seconde zodat het volledig tot stilstand komt.\"}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Arduino code:\"}],\"\\n\",[\"$\",\"pre\",null,{\"children\":[\"$\",\"code\",null,{\"className\":\"language-Arduino\",\"children\":\"$6\"}]}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Code om de commando's uit te voeren:\"}],\"\\n\",[\"$\",\"pre\",null,{\"children\":[\"$\",\"code\",null,{\"children\":\"import socket\\n\\n# Vervang dit door het IP-adres van je Arduino\\nUDP_IP = \\\".....\\\"  \\nUDP_PORT = 4210\\n\\n# Maak een UDP-socket aan\\nsock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)\\n\\nwhile True:\\n    command = input(\\\"Voer een commando in (bijv. 'V2' voor vooruit 2 seconden, 'A2' voor achteruit 2 seconden): \\\")\\n    if command:  # Zorg ervoor dat er een invoer is\\n        sock.sendto(command.encode(), (UDP_IP, UDP_PORT))\\n        print(f\\\"Verzonden commando: {command}\\\")\\n\"}]}],\"\\n\",[\"$\",\"p\",null,{\"children\":\"Videos:\"}],\"\\n\",\"\\n\",[\"$\",\"video\",null,{\"controls\":true,\"width\":\"800\",\"children\":[[\"$\",\"source\",null,{\"src\":\"/videos/RobotV2.mp4\",\"type\":\"video/mp4\"}],[\"$\",\"p\",null,{\"children\":\"Your browser does not support the video tag.\"}]]}],\"\\n\",[\"$\",\"video\",null,{\"controls\":true,\"width\":\"800\",\"children\":[[\"$\",\"source\",null,{\"src\":\"/videos/Robot1.mp4\",\"type\":\"video/mp4\"}],[\"$\",\"p\",null,{\"children\":\"Your browser does not support the video tag. Moet nog gedraaid worden\"}]]}]],[[\"$\",\"link\",\"0\",{\"rel\":\"stylesheet\",\"href\":\"/_next/static/css/42d4ccb0167bd621.css\",\"precedence\":\"next\",\"crossOrigin\":\"$undefined\"}]]],null],null]},[null,[\"$\",\"$L7\",null,{\"parallelRouterKey\":\"children\",\"segmentPath\":[\"children\",\"works\",\"children\",\"brobot\",\"children\"],\"error\":\"$undefined\",\"errorStyles\":\"$undefined\",\"errorScripts\":\"$undefined\",\"template\":[\"$\",\"$L8\",null,{}],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":\"$undefined\",\"notFoundStyles\":\"$undefined\"}]],null]},[null,[\"$\",\"$L7\",null,{\"parallelRouterKey\":\"children\",\"segmentPath\":[\"children\",\"works\",\"children\"],\"error\":\"$undefined\",\"errorStyles\":\"$undefined\",\"errorScripts\":\"$undefined\",\"template\":[\"$\",\"$L8\",null,{}],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":\"$undefined\",\"notFoundStyles\":\"$undefined\"}]],null]},[[[[\"$\",\"link\",\"0\",{\"rel\":\"stylesheet\",\"href\":\"/_next/static/css/2e217b198695519f.css\",\"precedence\":\"next\",\"crossOrigin\":\"$undefined\"}],[\"$\",\"link\",\"1\",{\"rel\":\"stylesheet\",\"href\":\"/_next/static/css/3d2178a07cfa6620.css\",\"precedence\":\"next\",\"crossOrigin\":\"$undefined\"}]],[\"$\",\"html\",null,{\"lang\":\"en\",\"className\":\"__className_d96792\",\"children\":[\"$\",\"body\",null,{\"children\":[\"$\",\"$L7\",null,{\"parallelRouterKey\":\"children\",\"segmentPath\":[\"children\"],\"error\":\"$undefined\",\"errorStyles\":\"$undefined\",\"errorScripts\":\"$undefined\",\"template\":[\"$\",\"$L8\",null,{}],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":[\"$\",\"div\",null,{\"className\":\"header\",\"children\":[\"$\",\"div\",null,{\"style\":{\"display\":\"flex\",\"flexDirection\":\"row\",\"gap\":24},\"children\":[\"$\",\"$L9\",null,{\"href\":\"/\",\"className\":\"header-card hoverable-work\",\"style\":{\"display\":\"flex\",\"flexDirection\":\"column\",\"gap\":4,\"transform\":\"rotate(0deg)\",\"paddingInline\":8,\"paddingBlock\":4},\"children\":\"Er is iets niet goed gegaan.\"}]}]}],\"notFoundStyles\":[[\"$\",\"link\",\"0\",{\"rel\":\"stylesheet\",\"href\":\"/_next/static/css/8cd5cabe57454178.css\",\"precedence\":\"next\",\"crossOrigin\":\"$undefined\"}]]}]}]}]],null],null],\"couldBeIntercepted\":false,\"initialHead\":[null,\"$La\"],\"globalErrorComponent\":\"$b\",\"missingSlots\":\"$Wc\"}]\n"])</script><script>self.__next_f.push([1,"a:[[\"$\",\"meta\",\"0\",{\"name\":\"viewport\",\"content\":\"width=device-width, initial-scale=1\"}],[\"$\",\"meta\",\"1\",{\"charSet\":\"utf-8\"}],[\"$\",\"title\",\"2\",{\"children\":\"Portfolio Max\"}],[\"$\",\"meta\",\"3\",{\"name\":\"description\",\"content\":\"Portfolio site of Max Stokla\"}]]\n5:null\n"])</script></body></html>
