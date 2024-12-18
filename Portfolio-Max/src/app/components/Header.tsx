@@ -193,7 +193,7 @@ export default function Header() {
           </span>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "row", paddingTop: 2, gap: 30 }}>
+        <div style={{ display: "flex", flexDirection: "row", paddingTop: 2, gap: 15 }}>
           <WorksIndex works={works.slice(0, Math.ceil(works.length / 2))} />
           <WorksIndex works={works.slice(Math.ceil(works.length / 2))} className="work2" />
         </div>
