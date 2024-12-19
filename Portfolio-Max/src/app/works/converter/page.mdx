@@ -53,6 +53,13 @@ if not os.path.exists(output_folder):
     os.makedirs(output_folder)
 ```
 
+   - input_folder: Dit is de map waar je MP4-bestanden zich bevinden. Je moet "map1" vervangen door het daadwerkelijke pad naar je input map.
+
+   - output_folder: Dit is de map waar de geconverteerde GIF-bestanden worden opgeslagen. Vervang "map2" door het gewenste pad naar je output map.
+
+   - if not os.path.exists(output_folder): os.makedirs(output_folder): Dit stukje code controleert of de output map al bestaat. Als dat niet het geval is, wordt deze map aangemaakt. Dit voorkomt fouten als de map nog niet bestaat.
+
+
 3. De convert_to_gif Functie:
 
 ```
@@ -82,6 +89,39 @@ def convert_to_gif(file_path):
     print(f"Converted {file_path} to {output_file}")
 ```
 
+
+Deze functie voert de daadwerkelijke conversie van een enkel MP4-bestand naar een GIF-bestand uit.
+
+   - base_name = os.path.basename(file_path): Haalt de bestandsnaam (zonder pad) uit het volledige bestandspad.
+
+   - output_file = os.path.join(output_folder, f"{os.path.splitext(base_name)[0]}.gif"): Bepaalt de naam en locatie van het GIF-bestand. Het gebruikt de oorspronkelijke bestandsnaam, vervangt de extensie .mp4 door .gif en plaatst het in de output_folder.
+
+   - ffmpeg_path = r"locatie/download": Hier moet je het volledige pad naar ffmpeg.exe op jouw computer opgeven. Verander locatie/download naar de locatie waar jij ffmpeg hebt opgeslagen. Zorg ervoor dat je de juiste locatie opgeeft, anders werkt de code niet.
+
+   - if os.path.exists(output_file): ...: Controleert of het te genereren GIF-bestand al bestaat in de uitvoermap. Als het bestand al bestaat, wordt de conversie overgeslagen en gaat het script verder.
+
+  -  command = [...]: Dit is het belangrijkste deel van de functie. Hier wordt het ffmpeg commando samengesteld. Laten we elk onderdeel van het commando bekijken:
+
+      -  ffmpeg_path: Het pad naar het ffmpeg programma.
+
+      -  -i file_path: Geeft aan wat het input bestand is (het MP4-bestand).
+
+       - -vf 'fps=10,scale=320:-1:flags=lanczos': Dit is een videofilter (-vf).
+
+            -fps=10: Stelt de framesnelheid (frames per seconde) van de GIF in op 10. Je kunt dit getal aanpassen naar wens.
+
+           - scale=320:-1: Schaalt de video naar een breedte van 320 pixels. De hoogte wordt automatisch aangepast om de originele beeldverhouding te behouden (-1).
+
+           - flags=lanczos: Geeft aan dat het lanczos algoritme gebruikt moet worden voor het schalen. Dit algoritme levert over het algemeen een betere beeldkwaliteit op.
+
+       - -c:v gif: Specificeert dat de output video codec gif moet zijn.
+
+       - output_file: Het pad en de naam van het output GIF-bestand.
+
+   - subprocess.run(command): Voert het samengestelde ffmpeg commando uit.
+
+    -print(f"Converted {file_path} to {output_file}"): Print een bericht naar de console om aan te geven dat de conversie van een bestand voltooid is.
+
 4. De main Functie:
 
 ```
@@ -96,6 +136,17 @@ def main():
 if __name__ == '__main__':
     main()
 ```
+
+Deze functie orkestreert het gehele conversieproces.
+
+   - mp4_files = glob.glob(os.path.join(input_folder, '*.mp4')): Vindt alle bestanden in de input_folder die eindigen op .mp4 en slaat de lijst met bestandspaden op in de variabele mp4_files.
+
+   - with multiprocessing.Pool() as pool:: Dit creëert een Pool van worker processen. Het aantal processen is standaard gelijk aan het aantal CPU-cores van je computer. Dit zorgt ervoor dat meerdere video's tegelijkertijd geconverteerd kunnen worden.
+
+   - pool.map(convert_to_gif, mp4_files): Dit is de kern van de multiprocessing. De map functie past de convert_to_gif functie toe op elk element (MP4-bestandspad) in de mp4_files lijst. Elk bestand wordt door een apart proces verwerkt.
+
+   - if __name__ == '__main__': main(): Dit zorgt ervoor dat de main functie alleen wordt uitgevoerd als het script direct wordt uitgevoerd (en niet als het wordt geïmporteerd als een module in een ander script).
+
 ### Complete code:
 
 ```python
