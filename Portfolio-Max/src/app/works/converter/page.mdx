@@ -95,10 +95,10 @@ De functie `convert_to_gif(file_path)` is verantwoordelijk voor de conversie van
     -   `base_name = os.path.basename(file_path)`: Eerst wordt de originele bestandsnaam van het MP4-bestand opgehaald met `os.path.basename()`. Het pad wordt hierbij verwijderd.
     -   `output_file = os.path.join(output_folder, f"{os.path.splitext(base_name)[0]}.gif")`: Vervolgens wordt het pad en de naam voor het resulterende GIF-bestand samengesteld. De GIF krijgt dezelfde naam als het MP4-bestand, maar met de extensie `.gif` en wordt opgeslagen in de `output_folder`.
 
-2. `ffmpeg` pad instellen:**
+2. `ffmpeg` pad instellen:
     -   `ffmpeg_path = r"locatie/download"`:  Dit definieert de locatie van het `ffmpeg.exe` bestand. **Cruciaal:** Vervang `"locatie/download"` door het daadwerkelijke pad naar `ffmpeg.exe` op je computer.
 
-3. Controle op bestaand bestand:**
+3. Controle op bestaand bestand:
     -   `if os.path.exists(output_file): ...`:  Er wordt gecontroleerd of een GIF-bestand met dezelfde naam al bestaat in de `output_folder`. Als dit het geval is (`True`), wordt de conversie overgeslagen met `return`, om te voorkomen dat bestaande bestanden worden overschreven.
 
 4. `ffmpeg` commando opbouwen:
@@ -115,6 +115,8 @@ De functie `convert_to_gif(file_path)` is verantwoordelijk voor de conversie van
 5. Commando uitvoeren en afronden:
     -   `subprocess.run(command)`: Dit voert het samengestelde `ffmpeg` commando uit. `subprocess.run()` wacht tot de conversie is voltooid.
     -  `print(f"Converted {file_path} to {output_file}")`: Ten slotte wordt er een bericht naar de console geprint om te bevestigen dat de conversie is voltooid, met vermelding van het originele MP4-bestand en het gemaakte GIF-bestand.
+
+
 4. De main Functie:
 
 ```
@@ -132,14 +134,10 @@ if __name__ == '__main__':
 
 Deze functie orkestreert het gehele conversieproces.
 
-   - mp4_files = glob.glob(os.path.join(input_folder, '*.mp4')): Vindt alle bestanden in de input_folder die eindigen op .mp4 en slaat de lijst met bestandspaden op in de variabele mp4_files.
-
-   - with multiprocessing.Pool() as pool:: Dit creëert een Pool van worker processen. Het aantal processen is standaard gelijk aan het aantal CPU-cores van je computer. Dit zorgt ervoor dat meerdere video's tegelijkertijd geconverteerd kunnen worden.
-
-   - pool.map(convert_to_gif, mp4_files): Dit is de kern van de multiprocessing. De map functie past de convert_to_gif functie toe op elk element (MP4-bestandspad) in de mp4_files lijst. Elk bestand wordt door een apart proces verwerkt.
-
-   - if __name__ == '__main__': main(): Dit zorgt ervoor dat de main functie alleen wordt uitgevoerd als het script direct wordt uitgevoerd (en niet als het wordt geïmporteerd als een module in een ander script).
-
+-   `mp4_files = glob.glob(os.path.join(input_folder, '*.mp4'))`: Vindt alle bestanden in de `input_folder` die eindigen op `.mp4` en slaat de lijst met bestandspaden op in de variabele `mp4_files`.
+-   `with multiprocessing.Pool() as pool:`: Dit creëert een `Pool` van worker processen. Het aantal processen is standaard gelijk aan het aantal CPU-cores van je computer. Dit zorgt ervoor dat meerdere video's tegelijkertijd geconverteerd kunnen worden.
+-   `pool.map(convert_to_gif, mp4_files)`: Dit is de kern van de multiprocessing. De `map` functie past de `convert_to_gif` functie toe op elk element (MP4-bestandspad) in de `mp4_files` lijst. Elk bestand wordt door een apart proces verwerkt.
+-   `if __name__ == '__main__': main()`: Dit zorgt ervoor dat de `main` functie alleen wordt uitgevoerd als het script direct wordt uitgevoerd (en niet als het wordt geïmporteerd als een module in een ander script).
 ### Complete code:
 
 ```python
