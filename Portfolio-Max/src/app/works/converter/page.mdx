@@ -89,38 +89,32 @@ def convert_to_gif(file_path):
     print(f"Converted {file_path} to {output_file}")
 ```
 
-Deze functie voert de daadwerkelijke conversie van een enkel MP4-bestand naar een GIF-bestand uit.
+De functie `convert_to_gif(file_path)` is verantwoordelijk voor de conversie van één MP4-videobestand naar een GIF-afbeelding. Hieronder volgt een stapsgewijze uitleg:
 
-    -base_name = os.path.basename(file_path): Haalt de bestandsnaam (zonder pad) uit het volledige bestandspad.
+1. Bestandsnaam bepalen:
+    -   `base_name = os.path.basename(file_path)`: Eerst wordt de originele bestandsnaam van het MP4-bestand opgehaald met `os.path.basename()`. Het pad wordt hierbij verwijderd.
+    -   `output_file = os.path.join(output_folder, f"{os.path.splitext(base_name)[0]}.gif")`: Vervolgens wordt het pad en de naam voor het resulterende GIF-bestand samengesteld. De GIF krijgt dezelfde naam als het MP4-bestand, maar met de extensie `.gif` en wordt opgeslagen in de `output_folder`.
 
-    -output_file = os.path.join(output_folder, f"{os.path.splitext(base_name)[0]}.gif"): Bepaalt de naam en locatie van het GIF-bestand. Het gebruikt de oorspronkelijke bestandsnaam, vervangt de extensie .mp4 door .gif en plaatst het in de output_folder.
+2. `ffmpeg` pad instellen:**
+    -   `ffmpeg_path = r"locatie/download"`:  Dit definieert de locatie van het `ffmpeg.exe` bestand. **Cruciaal:** Vervang `"locatie/download"` door het daadwerkelijke pad naar `ffmpeg.exe` op je computer.
 
-    -ffmpeg_path = r"locatie/download": Hier moet je het volledige pad naar ffmpeg.exe op jouw computer opgeven. Verander locatie/download naar de locatie waar jij ffmpeg hebt opgeslagen. Zorg ervoor dat je de juiste locatie opgeeft, anders werkt de code niet.
+3. Controle op bestaand bestand:**
+    -   `if os.path.exists(output_file): ...`:  Er wordt gecontroleerd of een GIF-bestand met dezelfde naam al bestaat in de `output_folder`. Als dit het geval is (`True`), wordt de conversie overgeslagen met `return`, om te voorkomen dat bestaande bestanden worden overschreven.
 
-    -if os.path.exists(output_file): ...: Controleert of het te genereren GIF-bestand al bestaat in de uitvoermap. Als het bestand al bestaat, wordt de conversie overgeslagen en gaat het script verder.
+4. `ffmpeg` commando opbouwen:
+    -   `command = [...]`: Hier wordt het commando voor `ffmpeg` stap voor stap opgebouwd als een lijst van strings:
+        -   `ffmpeg_path`: Het pad naar het `ffmpeg` programma.
+        -   `-i file_path`: De optie `-i` specificeert het invoerbestand, in dit geval `file_path` (het pad naar het MP4-bestand).
+        -   `-vf 'fps=10,scale=320:-1:flags=lanczos'`:  De optie `-vf` wordt gebruikt om een videofilter toe te passen. Dit filter bestaat uit drie delen:
+            -   `fps=10`: Stelt de frames per seconde (fps) van de GIF in op 10. Dit kan naar wens worden aangepast.
+            -   `scale=320:-1`: Schaalt de video naar een breedte van 320 pixels. De `-1` zorgt ervoor dat de hoogte proportioneel wordt aangepast.
+            -   `flags=lanczos`: Specificeert het `lanczos` schalingsalgoritme voor een betere kwaliteit.
+        -   `-c:v gif`: De optie `-c:v` specificeert de video codec. Hier wordt `gif` gebruikt om aan te geven dat we een GIF willen maken.
+        -   `output_file`: Het volledige pad en de bestandsnaam van het resulterende GIF-bestand.
 
-    -command = [...]: Dit is het belangrijkste deel van de functie. Hier wordt het ffmpeg commando samengesteld. Laten we elk onderdeel van het commando bekijken:
-
-        -ffmpeg_path: Het pad naar het ffmpeg programma.
-
-        -  -i file_path: Geeft aan wat het input bestand is (het MP4-bestand).
-
-        -  -vf 'fps=10,scale=320:-1:flags=lanczos': Dit is een videofilter (-vf).
-
-            -fps=10: Stelt de framesnelheid (frames per seconde) van de GIF in op 10. Je kunt dit getal aanpassen naar wens.
-
-            -scale=320:-1: Schaalt de video naar een breedte van 320 pixels. De hoogte wordt automatisch aangepast om de originele beeldverhouding te behouden (-1).
-
-            -flags=lanczos: Geeft aan dat het lanczos algoritme gebruikt moet worden voor het schalen. Dit algoritme levert over het algemeen een betere beeldkwaliteit op.
-
-        -  -c:v gif: Specificeert dat de output video codec gif moet zijn.
-
-        -output_file: Het pad en de naam van het output GIF-bestand.
-
-    -subprocess.run(command): Voert het samengestelde ffmpeg commando uit.
-
-    -print(f"Converted {file_path} to {output_file}"): Print een bericht naar de console om aan te geven dat de conversie van een bestand voltooid is.
-
+5. Commando uitvoeren en afronden:
+    -   `subprocess.run(command)`: Dit voert het samengestelde `ffmpeg` commando uit. `subprocess.run()` wacht tot de conversie is voltooid.
+    -  `print(f"Converted {file_path} to {output_file}")`: Ten slotte wordt er een bericht naar de console geprint om te bevestigen dat de conversie is voltooid, met vermelding van het originele MP4-bestand en het gemaakte GIF-bestand.
 4. De main Functie:
 
 ```
