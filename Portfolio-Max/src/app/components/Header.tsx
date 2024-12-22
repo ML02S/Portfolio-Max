@@ -51,7 +51,7 @@ const AnimatedText = ({ text }: { text: string }) => {
               isResetting: !allReset,
             };
           });
-        }, index * 150);
+        }, index * 300);
       });
     };
   }, [text]);
@@ -76,7 +76,7 @@ const AnimatedText = ({ text }: { text: string }) => {
             currentIndex: nextIndex,
           };
         });
-      }, 150);
+      }, 300);
       return () => clearInterval(timer);
     };
 
@@ -105,7 +105,7 @@ const AnimatedText = ({ text }: { text: string }) => {
             setIsHovered(false);
           }, 1000);
         }
-      }, index * 150);
+      }, index * 300);
     });
   };
 
