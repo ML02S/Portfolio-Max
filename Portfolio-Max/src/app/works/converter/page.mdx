@@ -52,13 +52,9 @@ output_folder = r"map2"
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
 ```
-
-   - input_folder: Dit is de map waar je MP4-bestanden zich bevinden. Je moet "map1" vervangen door het daadwerkelijke pad naar je input map.
-
-   - output_folder: Dit is de map waar de geconverteerde GIF-bestanden worden opgeslagen. Vervang "map2" door het gewenste pad naar je output map.
-
-   - if not os.path.exists(output_folder): os.makedirs(output_folder): Dit stukje code controleert of de output map al bestaat. Als dat niet het geval is, wordt deze map aangemaakt. Dit voorkomt fouten als de map nog niet bestaat.
-
+-   `input_folder`: Dit is de map waar je MP4-bestanden zich bevinden. Je moet `"map1"` vervangen door het daadwerkelijke pad naar je input map.
+-   `output_folder`: Dit is de map waar de geconverteerde GIF-bestanden worden opgeslagen. Vervang `"map2"` door het gewenste pad naar je output map.
+-   `if not os.path.exists(output_folder): os.makedirs(output_folder)`: Dit stukje code controleert of de output map al bestaat. Als dat niet het geval is, wordt deze map aangemaakt. Dit voorkomt fouten als de map nog niet bestaat.
 
 3. De convert_to_gif Functie:
 
