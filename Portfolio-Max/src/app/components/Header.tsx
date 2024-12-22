@@ -105,7 +105,7 @@ const AnimatedText = ({ text }: { text: string }) => {
             setIsHovered(false);
           }, 1000);
         }
-      }, index * 300);
+      }, index * 225);
     });
   };
 
