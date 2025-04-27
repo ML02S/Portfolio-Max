@@ -1,0 +1,187 @@
+import { LeftArrow } from "../../components/arrows"
+import Image from 'next/image';
+
+<div className="heading">
+  <a className="back" href="/"><LeftArrow />Terug</a>
+  ## MP4 naar GIF converteerder
+  <span>2024</span>
+</div>
+
+<hr />
+
+### Project
+
+Voor de inspiratie van mijn portfolio website wilde ik een moodboard maken in Miro. Mijn grootste inspiratiebron was Instagram, waar ik veel afbeeldingen en video's had geliked. Deze media handmatig downloaden leek een onbegonnen taak.
+
+Ik begon aan een webscraper. Helaas stuitte ik op problemen. Het downloaden van de laatste items in een reeks lukte niet, en video's opslaan was lastig. Afbeeldingen vormden geen probleem, maar video's waren een uitdaging.
+
+Ik zocht een alternatief en ontdekte de mogelijkheid om een overzicht van mijn Instagram likes op te vragen als JSON-bestand. Dit bestand bevatte de URL's van alle media die ik had geliked. Met de bulk downloader WFdownloader kon ik vervolgens alle afbeeldingen en video's in één keer downloaden.
+
+Een nieuw probleem ontstond. Miro ondersteunde geen MP4-video's, maar wel GIF's. Online converters waren een optie, maar vaak beperkt tot het verwerken van een klein aantal bestanden tegelijk of één voor één. Dit zou veel tijd kosten gezien de hoeveelheid van mijn gedownloade media.
+
+Ik besloot mijn eigen video-naar-GIF converter te ontwikkelen. Dit gaf me controle over het proces en stelde me in staat om al mijn video's in één keer naar GIF te converteren. Het maakt gebruik van de ffmpeg bibliotheek.
+
+
+
+---
+
+### Uitleg code:
+
+1. Imports:
+```
+import os
+import subprocess
+import glob
+import multiprocessing
+```
+
+   - os: Deze module biedt functies voor interactie met het besturingssysteem, zoals het maken van mappen en het werken met bestandspaden.
+
+   - subprocess: Hiermee kunnen we externe programma's, zoals ffmpeg, aanroepen vanuit ons Python-script.
+
+   - glob: Deze module helpt bij het vinden van alle bestanden die aan een bepaald patroon voldoen (in dit geval alle .mp4-bestanden).
+
+   - multiprocessing: Deze module maakt het mogelijk om meerdere processen parallel uit te voeren, waardoor we de conversie van meerdere video's tegelijkertijd kunnen starten. Dit versnelt het proces aanzienlijk, vooral bij een groot aantal bestanden.
+
+2. Mappen Definiëren:
+
+```
+input_folder = r"map1"
+output_folder = r"map2"
+
+if not os.path.exists(output_folder):
+    os.makedirs(output_folder)
+```
+-   `input_folder`: Dit is de map waar je MP4-bestanden zich bevinden. Je moet `"map1"` vervangen door het daadwerkelijke pad naar je input map.
+-   `output_folder`: Dit is de map waar de geconverteerde GIF-bestanden worden opgeslagen. Vervang `"map2"` door het gewenste pad naar je output map.
+-   `if not os.path.exists(output_folder): os.makedirs(output_folder)`: Dit stukje code controleert of de output map al bestaat. Als dat niet het geval is, wordt deze map aangemaakt. Dit voorkomt fouten als de map nog niet bestaat.
+
+3. De convert_to_gif Functie:
+
+```
+def convert_to_gif(file_path):
+    # Bepaal de naam van het output bestand
+    base_name = os.path.basename(file_path)
+    output_file = os.path.join(output_folder, f"{os.path.splitext(base_name)[0]}.gif")
+
+    # Volledige pad naar ffmpeg.exe
+    ffmpeg_path = r"locatie/download"  # Locatie waar je de ffmpeg hebt gedownload
+
+    # Controleer of het GIF-bestand al bestaat
+    if os.path.exists(output_file):
+        print(f"{output_file} bestaat al. Sla over.")
+        return  # Sla de conversie over als het bestand al bestaat
+
+    # FFmpeg command
+    command = [
+        ffmpeg_path, '-i', file_path,
+        '-vf', 'fps=10,scale=320:-1:flags=lanczos',
+        '-c:v', 'gif',
+        output_file
+    ]
+
+    # Voer het commando uit
+    subprocess.run(command)
+    print(f"Converted {file_path} to {output_file}")
+```
+
+De functie `convert_to_gif(file_path)` is verantwoordelijk voor de conversie van één MP4-videobestand naar een GIF-afbeelding. Hieronder volgt een stapsgewijze uitleg:
+
+1. Bestandsnaam bepalen:
+    -   `base_name = os.path.basename(file_path)`: Eerst wordt de originele bestandsnaam van het MP4-bestand opgehaald met `os.path.basename()`. Het pad wordt hierbij verwijderd.
+    -   `output_file = os.path.join(output_folder, f"{os.path.splitext(base_name)[0]}.gif")`: Vervolgens wordt het pad en de naam voor het resulterende GIF-bestand samengesteld. De GIF krijgt dezelfde naam als het MP4-bestand, maar met de extensie `.gif` en wordt opgeslagen in de `output_folder`.
+
+2. `ffmpeg` pad instellen:
+    -   `ffmpeg_path = r"locatie/download"`:  Dit definieert de locatie van het `ffmpeg.exe` bestand. **Cruciaal:** Vervang `"locatie/download"` door het daadwerkelijke pad naar `ffmpeg.exe` op je computer.
+
+3. Controle op bestaand bestand:
+    -   `if os.path.exists(output_file): ...`:  Er wordt gecontroleerd of een GIF-bestand met dezelfde naam al bestaat in de `output_folder`. Als dit het geval is (`True`), wordt de conversie overgeslagen met `return`, om te voorkomen dat bestaande bestanden worden overschreven.
+
+4. `ffmpeg` commando opbouwen:
+    -   `command = [...]`: Hier wordt het commando voor `ffmpeg` stap voor stap opgebouwd als een lijst van strings:
+        -   `ffmpeg_path`: Het pad naar het `ffmpeg` programma.
+        -   `-i file_path`: De optie `-i` specificeert het invoerbestand, in dit geval `file_path` (het pad naar het MP4-bestand).
+        -   `-vf 'fps=10,scale=320:-1:flags=lanczos'`:  De optie `-vf` wordt gebruikt om een videofilter toe te passen. Dit filter bestaat uit drie delen:
+            -   `fps=10`: Stelt de frames per seconde (fps) van de GIF in op 10. Dit kan naar wens worden aangepast.
+            -   `scale=320:-1`: Schaalt de video naar een breedte van 320 pixels. De `-1` zorgt ervoor dat de hoogte proportioneel wordt aangepast.
+            -   `flags=lanczos`: Specificeert het `lanczos` schalingsalgoritme voor een betere kwaliteit.
+        -   `-c:v gif`: De optie `-c:v` specificeert de video codec. Hier wordt `gif` gebruikt om aan te geven dat we een GIF willen maken.
+        -   `output_file`: Het volledige pad en de bestandsnaam van het resulterende GIF-bestand.
+
+5. Commando uitvoeren en afronden:
+    -   `subprocess.run(command)`: Dit voert het samengestelde `ffmpeg` commando uit. `subprocess.run()` wacht tot de conversie is voltooid.
+    -  `print(f"Converted {file_path} to {output_file}")`: Ten slotte wordt er een bericht naar de console geprint om te bevestigen dat de conversie is voltooid, met vermelding van het originele MP4-bestand en het gemaakte GIF-bestand.
+
+
+4. De main Functie:
+
+```
+def main():
+    # Zoek naar MP4 bestanden in de input folder
+    mp4_files = glob.glob(os.path.join(input_folder, '*.mp4'))
+
+    # Gebruik multiprocessing om bestanden in bulk te converteren
+    with multiprocessing.Pool() as pool:
+        pool.map(convert_to_gif, mp4_files)
+
+if __name__ == '__main__':
+    main()
+```
+
+Deze functie orkestreert het gehele conversieproces.
+
+-   `mp4_files = glob.glob(os.path.join(input_folder, '*.mp4'))`: Vindt alle bestanden in de `input_folder` die eindigen op `.mp4` en slaat de lijst met bestandspaden op in de variabele `mp4_files`.
+-   `with multiprocessing.Pool() as pool:`: Dit creëert een `Pool` van worker processen. Het aantal processen is standaard gelijk aan het aantal CPU-cores van je computer. Dit zorgt ervoor dat meerdere video's tegelijkertijd geconverteerd kunnen worden.
+-   `pool.map(convert_to_gif, mp4_files)`: Dit is de kern van de multiprocessing. De `map` functie past de `convert_to_gif` functie toe op elk element (MP4-bestandspad) in de `mp4_files` lijst. Elk bestand wordt door een apart proces verwerkt.
+-   `if __name__ == '__main__': main()`: Dit zorgt ervoor dat de `main` functie alleen wordt uitgevoerd als het script direct wordt uitgevoerd (en niet als het wordt geïmporteerd als een module in een ander script).
+### Complete code:
+
+```python
+import os
+import subprocess
+import glob
+import multiprocessing
+
+input_folder = r"map1"
+output_folder = r"map2"
+
+if not os.path.exists(output_folder):
+    os.makedirs(output_folder)
+
+def convert_to_gif(file_path):
+    # Bepaal de naam van het output bestand
+    base_name = os.path.basename(file_path)
+    output_file = os.path.join(output_folder, f"{os.path.splitext(base_name)[0]}.gif")
+    
+    # Volledige pad naar ffmpeg.exe
+    ffmpeg_path = r"locatie/download"  # Locatie waar je de ffmpeg hebt gedownload
+    
+    # Controleer of het GIF-bestand al bestaat
+    if os.path.exists(output_file):
+        print(f"{output_file} bestaat al. Sla over.")
+        return  # Sla de conversie over als het bestand al bestaat
+
+    # FFmpeg command
+    command = [
+        ffmpeg_path, '-i', file_path, 
+        '-vf', 'fps=10,scale=320:-1:flags=lanczos', 
+        '-c:v', 'gif', 
+        output_file
+    ]
+    
+    # Voer het commando uit
+    subprocess.run(command)
+    print(f"Converted {file_path} to {output_file}")
+
+def main():
+    # Zoek naar MP4 bestanden in de input folder
+    mp4_files = glob.glob(os.path.join(input_folder, '*.mp4'))
+    
+    # Gebruik multiprocessing om bestanden in bulk te converteren
+    with multiprocessing.Pool() as pool:
+        pool.map(convert_to_gif, mp4_files)
+
+if __name__ == '__main__':
+    main()
+
+---
