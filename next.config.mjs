@@ -1,5 +1,3 @@
-import createMDX from '@next/mdx';
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   pageExtensions: ['js', 'jsx', 'md', 'mdx', 'ts', 'tsx'],
@@ -8,9 +6,4 @@ const nextConfig = {
   output: 'export',     // Dit zorgt ervoor dat de site wordt geëxporteerd als statische bestanden
 };
 
-const withMDX = createMDX({
-  // Voeg hier eventueel MDX-plugins toe
-});
-
-// Combineer de MDX-configuratie met de Next.js-configuratie
-export default withMDX(nextConfig);
+export default nextConfig;
