@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import { Roboto_Mono } from "next/font/google";
-import UmamiProvider from "next-umami";
 import "../app/styles/globals.css";
 
 export const metadata: Metadata = {
   title: "Portfolio Max",
   description: "Portfolio site of Max Stokla",
+  icons: {
+    icon: '/Fish.png',
+    apple: '/Fish.png',
+  }
 };
 
 const roboto = Roboto_Mono({
