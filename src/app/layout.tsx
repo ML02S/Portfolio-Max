@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { Roboto_Mono } from "next/font/google";
-import UmamiProvider from "next-umami";
+import { Inter } from "next/font/google";
 import "../app/styles/globals.css";
 
 export const metadata: Metadata = {
@@ -12,19 +11,21 @@ export const metadata: Metadata = {
   },
 };
 
-const roboto = Roboto_Mono({
+const inter = Inter({
   weight: "400",
   subsets: ["latin"],
 });
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en" className={roboto.className}>
-      <body>{children}</body>
+    <html lang="en">
+      <body className={inter.className}>
+        {children}
+      </body>
     </html>
   );
 }
