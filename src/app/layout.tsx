@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Roboto_Mono } from "next/font/google";
 import "../app/styles/globals.css";
-import PlausibleProvider from 'plausible-tracker';
 
 export const metadata: Metadata = {
   title: "Portfolio Max",
@@ -24,11 +23,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={roboto.className}>
-      <body>
-        <PlausibleProvider domain="your-domain.com">
-          {children}
-        </PlausibleProvider>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
