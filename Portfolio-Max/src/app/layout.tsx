@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import { Roboto_Mono } from "next/font/google";
-import UmamiProvider from "next-umami";
 import "../app/styles/globals.css";
+import PlausibleProvider from 'plausible-tracker';
 
 export const metadata: Metadata = {
   title: "Portfolio Max",
   description: "Portfolio site of Max Stokla",
+  icons: {
+    icon: '/Fish.png',
+    apple: '/Fish.png',
+  }
 };
 
 const roboto = Roboto_Mono({
@@ -20,7 +24,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={roboto.className}>
-      <body>{children}</body>
+      <body>
+        <PlausibleProvider domain="your-domain.com">
+          {children}
+        </PlausibleProvider>
+      </body>
     </html>
   );
 }
